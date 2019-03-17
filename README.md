@@ -75,3 +75,7 @@ Example response body:
   ]
 }
 ```
+
+## Todos
+
+- [ ] Change to [GitHub Sync at SwaggerHub](https://app.swaggerhub.com/help/integrations/github-sync)
