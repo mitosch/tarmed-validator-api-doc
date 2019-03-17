@@ -64,7 +64,7 @@ Example response body:
     },
     {
       "code": 3011,
-      "message": "00.0025 can not be used for patient with age 38. Rules of 00.0025: >= 75 (-0), <= 6 (+0)",
+      "message": "00.0025 with session date 2019-04-01 not allowed for patient with date of birth 1981-03-30. patient age: 38. invalid before: 2056-03-30, invalid after: 1987-03-30. Rules of 00.0025: >= 75y (tol.: -0d), <= 6y (tol.: +0d)",
       "index": 1
     },
     {
@@ -76,6 +76,18 @@ Example response body:
 }
 ```
 
+## Roadmap
+
+The following features will be implemented:
+
+### /v0 -> /v1
+
+- [ ] Integrate reference ID for consumers to refer to submitted ID instead of index when errors appear
+- [ ] Validate quantities over multiple sessions
+
 ## Todos
 
 - [ ] Change to [GitHub Sync at SwaggerHub](https://app.swaggerhub.com/help/integrations/github-sync)
+- [ ] Implement access token authentication
+- [ ] Implement logging for false positives/negatives
+- [ ] Decouple API from TARMED browser website (separate rails instance)
