@@ -8,6 +8,8 @@ info:
     **IMPORTANT:**
      * This API is currently under development. A free preview version (path `/v0`) is currently available and will be deprecated after releasing the production version `/v1`).
      * URL is currently not deployed and is not accessible.
+     
+    Status, roadmap, bugtracker and more information can be found at GitHub: [https://github.com/mitosch/tarmed-validator-api-doc](https://github.com/mitosch/tarmed-validator-api-doc)
     
     Descriptions of TARMED values refer to the original MS Access database (e.g. `Leistungsnummer (LEISTUNG.LNR)`).
     
@@ -337,6 +339,7 @@ components:
         TARMED tarif version
          * `01.09` -  (default, if not set)
          * `01.08.01_BR`
+         * List of all versions: [http://www.tarmed-browser.ch/de/versionen](http://www.tarmed-browser.ch/de/versionen)
       schema:
         type: string
         example: 01.09
