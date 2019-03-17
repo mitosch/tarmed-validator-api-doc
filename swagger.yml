@@ -337,6 +337,7 @@ components:
         TARMED tarif version
          * `01.09` -  (default, if not set)
          * `01.08.01_BR`
+         * List of all versions: [http://www.tarmed-browser.ch/de/versionen](http://www.tarmed-browser.ch/de/versionen)
       schema:
         type: string
         example: 01.09
