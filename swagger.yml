@@ -311,7 +311,7 @@ components:
              * `3010` - Patient error: service not allowed for gender
              * `3011` - Patient error: service not allowed for patient's age
              * `4002` - Service attribute error:  invalid date
-             * `500x` - Quantity rule errors
+             * `5001` - Quantity error: quantity per session exceeds rule
              
              *: not implemented
         message:
