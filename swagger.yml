@@ -18,7 +18,7 @@ info:
       * [Tarifsystem TARMED, Bundesamt für Gesundheit](https://www.bag.admin.ch/bag/de/home/versicherungen/krankenversicherung/krankenversicherung-leistungen-tarife/Aerztliche-Leistungen-in-der-Krankenversicherung/Tarifsystem-Tarmed.html)
     
 servers:
-  - url: http://{environment}.tarmed-browser.ch/{version}
+  - url: http://{environment}.tarmed-browser.ch/api/{version}
     variables:
       environment:
         default: api
