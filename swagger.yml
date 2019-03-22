@@ -6,9 +6,8 @@ info:
     API for requesting & validating TARMED Data.
     
     **IMPORTANT:**
-     * This API is currently under development. A free preview version (path `/v0`) is currently available and will be deprecated after releasing the production version `/v1`).
-     * URL is currently not deployed and is not accessible.
-     
+     * This API is currently under *heavy* development. A free preview version (path `/v0`) is currently available and will be deprecated after releasing the production version `/v1`).
+
     Status, roadmap, bugtracker and more information can be found at GitHub: [https://github.com/mitosch/tarmed-validator-api-doc](https://github.com/mitosch/tarmed-validator-api-doc)
     
     Descriptions of TARMED values refer to the original MS Access database (e.g. `Leistungsnummer (LEISTUNG.LNR)`).
