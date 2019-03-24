@@ -6,7 +6,7 @@ The TARMED Validator API allows you to validate and access TARMED data. The main
 
 **IMPORTANT:**
 
-This API is currently under heavy development. A free preview version (path /v0) is currently available and will be deprecated after releasing the production version /v1).
+This API is currently under heavy development. A free preview version (path /v0) is available and will be deprecated after releasing the production version /v1).
 
 
 ### /v0 (preview)
@@ -93,10 +93,12 @@ The following features will be implemented:
 
 - [ ] Integrate reference ID for consumers to refer to submitted ID instead of index when errors appear
 - [ ] Validate quantities over multiple sessions
+- [ ] Validate exceptions for service blocks according to [GI-45](http://www.tarmed-browser.ch/de/generelle-interpretationen#gi-45-leistungsblocke) (e.g. ignore LB-53 cumulations for non "Medizinische Radiologie/Radiodiagnostik")
 
 ## Todos
 
+- [ ] Describe limitations, interpretations, exception, currently missing features in GitHub wiki
 - [ ] Change to [GitHub Sync at SwaggerHub](https://app.swaggerhub.com/help/integrations/github-sync)
-- [ ] Implement access token authentication
 - [ ] Implement logging for false positives/negatives
 - [ ] Decouple API from TARMED browser website (separate rails instance)
+- [X] Implement basic API key authentication
