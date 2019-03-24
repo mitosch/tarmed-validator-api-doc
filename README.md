@@ -2,7 +2,16 @@
 
 The TARMED Validator API allows you to validate and access TARMED data. The main purpose of this API is to validate TARMED invoices.
 
-Full endpoint documentation: [link-to-swagger]
+## API documentation
+
+**IMPORTANT:**
+
+This API is currently under heavy development. A free preview version (path /v0) is currently available and will be deprecated after releasing the production version /v1).
+
+
+### /v0 (preview)
+
+* [0.1.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/0.1.0)
 
 ## Example
 
