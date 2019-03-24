@@ -21,7 +21,6 @@ servers:
     variables:
       environment:
         default: api
-        description: fasdfasfd
         enum:
           - api
           - api.staging
