@@ -1,0 +1,455 @@
+openapi: 3.0.0
+info:
+  version: "0.3"
+  title: TARMED Validator API
+  description: |
+    API for requesting & validating TARMED Data.
+    
+    **IMPORTANT:**
+     * This API is currently under development. A free preview version (path `/v0`) is currently available and will be deprecated after releasing the production version `/v1`).
+     
+    Please contact me (info@tarmed-browser.ch) for an API-Key.
+
+    Status, roadmap, bugtracker and more information can be found at GitHub: [https://github.com/mitosch/tarmed-validator-api-doc](https://github.com/mitosch/tarmed-validator-api-doc)
+    
+    Descriptions of TARMED values refer to the original MS Access database (e.g. `Leistungsnummer (LEISTUNG.LNR)`).
+    
+    For more information about TARMED, please visit these resources:
+    
+      * [Tarifsystem TARMED, Bundesamt für Gesundheit](https://www.bag.admin.ch/bag/de/home/versicherungen/krankenversicherung/krankenversicherung-leistungen-tarife/Aerztliche-Leistungen-in-der-Krankenversicherung/Tarifsystem-Tarmed.html)
+    
+servers:
+  - url: http://{environment}.tarmed-validator.ch/api/{version}
+    variables:
+      environment:
+        default: api
+        enum:
+          - api
+          - api.staging
+      version:
+        default: v0
+        enum:
+          - v0 # preview version
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: browser
+    description: Read TARMED data (TARMED Browser API)
+    externalDocs:
+      url: http://www.tarmed-browser.ch
+  - name: validator
+    description: Validate TARMED data (TARMED Validator API)
+
+paths:
+  /validate:
+    put:
+      summary: Validate TARMED services
+      tags:
+        - validator
+      parameters:
+        - $ref: "#/components/parameters/locale"
+        - $ref: "#/components/parameters/tarmedVersion"
+      requestBody:
+        description: Invoice information with TARMED services
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                config:
+                  type: object
+                  properties:
+                    ignore_errors:
+                      type: array
+                      items:
+                        type: number
+                        format: integer
+                        example:
+                        - 5007
+                        - 6000
+                        description: error and warning codes to ignore (will be placed in ignored array response)
+                patient:
+                  type: object
+                  properties:
+                    dob:
+                      type: string
+                      format: date
+                    gender:
+                      type: string
+                      enum: [f, m]
+                      description: >
+                        Gender:
+                         * `f` - Female
+                         * `m` - Male
+                physician:
+                  type: object
+                  properties:
+                    codes:
+                      type: array
+                      items:
+                        properties:
+                          code:
+                            type: string
+                            format: string
+                            example: "0100"
+                      
+                services:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Position"
+      responses:
+        "200":
+          $ref: "#/components/responses/ValidationStatus"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  /services/values/{code}:
+    get:
+      summary: Get values of a TARMED service
+      tags:
+        - browser
+      description: Get values of a TARMED service by nr.
+      parameters:
+        - name: code
+          in: path
+          description: TARMED Leistungsnummer
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{2}\.\d{4}$'
+          example: 00.0010
+        - $ref: "#/components/parameters/tarmedVersion"
+      responses:
+       "200":
+          description: A JSON array of one TARMED service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TarmedServiceValues"
+  /services/texts/{code}:
+    get:
+      summary: Get texts of a TARMED service
+      tags:
+        - browser
+      description: Get texts like name, medical and technical interpretation of a TARMED service by code.
+      parameters:
+        - name: code
+          in: path
+          description: TARMED Leistungsnummer
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{2}\.\d{4}$'
+          example: 00.0010
+        - $ref: "#/components/parameters/tarmedVersion"
+        - $ref: "#/components/parameters/locale"
+      responses:
+       "200":
+          description: A JSON array of one TARMED service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TarmedServiceTexts"                
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  schemas:
+    TarmedServiceValues:
+      allOf:
+      - type: object
+        properties:
+          code:
+            type: string
+            description: TARMED Leistungsnummer (LEISTUNG.LNR)
+          assi_count:
+            type: number
+            format: integer
+            description: Anzahl Assistenten (LEISTUNG.ANZ_ASSI)
+          change_min:
+            type: number
+            format: integer
+            description: Wechselzeit (LEISTUNG.WECHSEL_MIN)
+          dignity_quant:
+            type: string
+            description: "Dignitäts-Nr.: \"FMH\" und Nr. zweistellig (LEISTUNG.QT_DIGNITAET)"
+          indication_min:
+            type: number
+            format: integer
+            description: Befund (LEISTUNG.BEFUND_MIN)
+          prepost_min:
+            type: number
+            format: integer
+            description: Vorbereitung/Nachbereitung (LEISTUNG.VBNB_MIN)
+          rate_factor_assi:
+            type: number
+            format: float
+            description: Taxpunkte Assistent (LEISTUNG.TP_ASSI)
+          rate_factor_doc:
+            type: number
+            format: float
+            description: Taxpunkte Arztleistung (LEISTUNG.TP_AL)
+          rate_factor_pdoc:
+            type: number
+            format: float
+            description: "Taxpunkte Arztleistung ohne FMH (calculated: LEISTUNG.TP_AL * LEISTUNG.F_AL_R)"
+          rate_factor_tech:
+            type: number
+            format: float
+            description: Taxpunkte Technische Leistung (LEISTUNG.TP_TL)
+          room_min:
+            type: number
+            format: integer
+            description: Raumzeit (LEISTUNG.RAUM_MIN, not from Einstein ;) )
+          service_min:
+            type: number
+            format: integer
+            description: Leistung im engeren Sinne (LEISTUNG.LSTGIMES_MIN)
+          sex:
+            type: string
+            enum: [male, female]
+            description: >
+              Patientengeschlecht (LEISTUNG.SEX)
+               * `male` - Männlich
+               * `female` - Weiblich
+          side:
+            type: boolean
+            description: >
+              Seitenangabe (LEISTUNG.SEITE)
+               * `true` - Die Angabe auf welcher Seite die Leistung erbracht wurde ist zwingend
+               * `false` - keine Seitenangabe nötig
+          surcharge_doc:
+            type: number
+            format: float
+            description: Zuschlags- oder Reduktions-Faktor auf Arztleistung (LEISTUNG.F_AL)
+          surcharge_pdoc:
+            type: number
+            format: float
+            description: Zuschlags- oder Reduktions-Faktor auf Arztleistung ohne FMH (LEISTUNG.F_AL_R)
+          surcharge_tech:
+            type: number
+            format: float
+            description: Zuschlags- oder Reduktions-Faktor auf techn. Leistung (LEISTUNG.F_TL)
+        example:
+          code: 00.0010
+          assi_count: 0
+          change_min: 0
+          dignity_quant: "FMH05"
+          indication_min: 0
+          prepost_min: 0
+          rate_factor_assi: 0
+          rate_factor_doc: 10.42
+          rate_factor_pdoc: 9.69
+          rate_factor_tech: 8.19
+          room_min: 5
+          service_min: 5
+          sex: null
+          side: false
+          surcharge_doc: 1
+          surcharge_pdoc: 0.93
+          surcharge_tech: 1
+      - $ref: "#/components/schemas/TarmedDates"
+    TarmedServiceTexts:
+      allOf:
+        - type: object
+          properties:
+            code:
+              type: string
+              description: TARMED nr (LEISTUNG_TEXT.LNR)
+            name:
+              type: string
+              description: Name of the service (LEISTUNG_TEXT.BEZ_255)
+            medical_info:
+              type: string
+              description: Medical interpretation (LEISTUNG_TEXT.MED_INTERPRET)
+            technical_info:
+              type: string
+              description: Technical interpretation (LEISTUNG_TEXT.TECH_INTERPRET)
+            locale:
+              type: string
+              enum: [de, fr, it]
+              description: >
+                Locale:
+                 * `de` - German
+                 * `fr` - French
+                 * `it` - Italian
+          example:
+            code: "00.0010"
+            name: "Konsultation, erste 5 Min. (Grundkonsultation)"
+            medical_info: "Beinhaltet alle ärztlichen Leistungen, die der Facharzt in seiner..."
+            technical_info: "Technische Interpretation ..."
+            locale: "de"
+        - $ref: "#/components/schemas/TarmedDates"
+    TarmedDates:
+      type: object
+      properties:
+        valid_from:
+          type: string
+          format: date
+          description: gültig von (*.GUELTIG_VON)
+        valid_until:
+          type: string
+          format: date
+          description: gültig bis (*.GUELTIG_BIS)
+        change_date:
+          type: string
+          format: date
+          description: mutiert am (*.MUT_DAT)
+      example:
+        valid_from: "2018-01-01"
+        valid_until: "2999-12-31"
+        change_date: "2017-03-12"
+    Position:
+      type: object
+      properties:
+        code:
+          type: string
+          description: TARMED code
+          example: 00.0010
+        ref_nr:
+          type: string
+          description: TARMED reference code
+          example: 00.0010
+        quantity:
+          type: number
+          format: integer
+        session:
+          type: number
+          format: integer
+        date:
+          type: string
+          format: date
+        internal_id:
+          oneOf:
+            - type: string
+            - type: integer
+          format: integer
+          example: 12345
+          
+    ValidationReport:
+      type: object
+      properties:
+        validation:
+          type: string
+          enum: [valid, invalid]
+          description: >
+            validation status
+             * `valid` - validation succeeded
+             * `invalid` - validation failed, detailled information in errors array
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorCode"
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorCode"
+        ignored:
+          type: object
+          description: ignored errors and warnings when configuration option `ignore_errors` is set
+          properties:
+            errors:
+              type: array
+              items:
+                $ref: "#/components/schemas/ErrorCode"
+            warnings:
+              type: array
+              items:
+                $ref: "#/components/schemas/ErrorCode"
+        
+
+    ErrorCode:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: >
+            error code:
+             * `2000` - TARMED version not found
+             * `2001` - TARMED code not found
+             * `2010` - Cumulation invalid: exclusion
+             * `2020` - Cumulation invalid: limited inclusion
+             * `2051` - Missing reference (addition)
+             * `2052` - Referenced parent not listed
+             * `2053` - Referenced parent not allowed
+             * `2055` - Reference error: service type main (H)*
+             * `2056` - Reference error: service type addition (Z)*
+             * `2057` - Reference error: service type reference (R)
+             * `2058` - Reference error: service type special addition (B)*
+             * `2059` - Reference error: service type pro memoria (M)*
+             * `3001` - Patient error: invalid gender (*)
+             * `3002` - Patient error: invalid date of birth
+             * `3010` - Patient error: service not allowed for gender
+             * `3011` - Patient error: service not allowed for patient's age
+             * `4002` - Service attribute error:  invalid date
+             * `5007` - Quantity error: quantity per session invalid
+             * `5021` - Quantity error: quantity per day invalid
+             * `5022` - Quantity error: quantity per week invalid
+             * `5023` - Quantity error: quantity per month invalid
+             * `6000` - Qualification error: service not allowed due to missing qualification
+             * `6004` - Qualification error: qualification not found
+             * `6005` - Qualification error: malformed physician, qualification format
+             * `7000` - Warning: Duplicate entry found (same date & session)
+             *: not implemented
+        message:
+          type: string
+          description: Additional detail about the validation error
+        index:
+          type: number
+          format: integer
+          description: When an array was given, index points to the validated element
+        internal_id:
+          oneOf:
+            - type: string
+            - type: integer
+          format: integer
+          example: 12345
+          description: ID of given position in request which the error or warning refers to.
+
+          
+  parameters:
+    locale:
+      name: locale
+      in: query
+      description: >
+        Language
+         * `de` - german (defaut, if not set)
+         * `fr` - french
+         * `it` - italian
+      schema:
+        type: string
+        example: de
+    tarmedVersion:
+      name: tarmed_version
+      in: query
+      description: >
+        TARMED tarif version
+         * `01.09` -  (default, if not set)
+         * `01.08.01_BR`
+         * List of all versions: [http://www.tarmed-browser.ch/de/versionen](http://www.tarmed-browser.ch/de/versionen)
+      schema:
+        type: string
+        example: 01.09
+    invoiceId:
+      name: invoiceId
+      in: path
+      description: ID of the invoice
+      required: true
+      schema:
+        type: string
+  responses:
+    UnauthorizedError:
+      description: API key is missing or invalid
+      headers:
+        WWW_Authenticate:
+          schema:
+            type: string
+    ValidationStatus:
+      description: Validation status report
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationReport"
