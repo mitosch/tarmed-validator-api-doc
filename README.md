@@ -6,18 +6,35 @@ The TARMED Validator API allows you to validate and access TARMED data. The main
 
 **IMPORTANT:**
 
-This API is currently under heavy development. A free preview version (path /v0) is available and will be deprecated after releasing the production version /v1).
+This API is currently under development. A free preview version (path /v0) is available and will be deprecated after releasing the production version /v1).
 
 
 ### /v0 (preview)
 
-* [0.2.1](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/0.2.1)
+[0.4](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/0.4)
+- [x] Add endpoint /validate-invoices for validating multiple invoices
+- [x] Add quantity per year validation
+- [x] Reorder quantity warnings for each position. It adds the warning at the position, where the quantity exceeds.
+- [x] Add warnings for missing qualifications (6100, 6101)
+
+[0.3](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/0.3)
+- [x] Validate quantity rules of service groups
+- [x] Validate reference service [GI-6](https://www.tarmed-browser.ch/de/generelle-interpretationen#gi-6-hauptleistung-zuschlagsleistung)
+- [x] Validation report in german
+- [x] Validate exceptions for service blocks according to [GI-45](http://www.tarmed-browser.ch/de/generelle-interpretationen#gi-45-leistungsblocke) (e.g. ignore LB-53 cumulations for non "Medizinische Radiologie/Radiodiagnostik")
+
+[0.2](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/0.2.1)
+- [x] Configuration for ignoring errors and warnings
+- [x] Warnings for rules, which can't be validated (e.g. duplicate entries)
+- [x] Add reference ID for consumers to refer to submitted ID instead of index when errors appear (`internal_id`)
+- [x] Validate quantities over multiple sessions
+
 
 ## Example
 
 The following example shows, how to validate TARMED positions.
 
-Example request body:
+Example request body `GET /validate`:
 ```json
 {
   "locale": "de",
@@ -200,12 +217,3 @@ The following features will be implemented:
 - [ ] Validate other service types, if possible (Pro Memoria, Zusatzleistung)
 - [ ] Validation reporting in french, italian
 - [ ] Notes for quantity rules which can't be validated technically (e.g. Pro Gutachten)
-- [x] Configuration for ignoring errors and warnings
-- [x] Warnings for rules, which can't be validated (e.g. duplicate entries)
-- [x] Validate quantity rules of service groups
-- [x] Validate reference service [GI-6](https://www.tarmed-browser.ch/de/generelle-interpretationen#gi-6-hauptleistung-zuschlagsleistung)
-- [x] Integrate reference ID for consumers to refer to submitted ID instead of index when errors appear
-- [x] Validate quantities over multiple sessions
-- [x] Validation report in german
-- [x] Validate exceptions for service blocks according to [GI-45](http://www.tarmed-browser.ch/de/generelle-interpretationen#gi-45-leistungsblocke) (e.g. ignore LB-53 cumulations for non "Medizinische Radiologie/Radiodiagnostik")
-
