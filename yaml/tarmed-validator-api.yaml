@@ -385,7 +385,7 @@ components:
           type: string
           description: TARMED code
           example: 00.0010
-        ref_nr:
+        ref_code:
           type: string
           description: TARMED reference code
           example: 00.0010
