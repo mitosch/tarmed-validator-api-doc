@@ -61,7 +61,7 @@ paths:
               type: object
               properties:
                 config:
-                  $ref: "#/components/schemas/ValidationConfiguration"
+                  $ref: "#/components/schemas/Config"
                 patient:
                   $ref: "#/components/schemas/Patient"
                 physician:
@@ -69,10 +69,14 @@ paths:
                 services:
                   type: array
                   items:
-                    $ref: "#/components/schemas/Position"
+                    $ref: "#/components/schemas/Service"
       responses:
         "200":
-          $ref: "#/components/responses/ValidationStatus"
+          description: Validation status report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
   /validate-invoices:
@@ -94,7 +98,7 @@ paths:
               type: object
               properties:
                 config:
-                  $ref: "#/components/schemas/ValidationConfiguration"
+                  $ref: "#/components/schemas/Config"
                 patient:
                   $ref: "#/components/schemas/Patient"
                 physician:
@@ -114,10 +118,14 @@ paths:
                         type: array
                         description: Array of services of a single invoice
                         items:
-                          $ref: "#/components/schemas/Position"
+                          $ref: "#/components/schemas/Service"
       responses:
         "200":
-          $ref: "#/components/responses/ValidationStatus"
+          description: Validation status report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
   /services/values/{code}:
@@ -198,17 +206,18 @@ components:
       in: header
       name: X-API-Key
   schemas:
-    Physician:
+    Config:
       type: object
       properties:
-        qualifications:
+        ignore_errors:
           type: array
           items:
-            properties:
-              code:
-                type: string
-                format: string
-                example: "0100"
+            type: number
+            format: integer
+            example:
+            - 5007
+            - 6000
+            description: error and warning codes to ignore (will be placed in ignored array response)
     Patient:
       type: object
       properties:
@@ -222,18 +231,124 @@ components:
             Gender:
              * `f` - Female
              * `m` - Male
-    ValidationConfiguration:
+    Physician:
       type: object
       properties:
-        ignore_errors:
+        qualifications:
           type: array
           items:
-            type: number
-            format: integer
-            example:
-            - 5007
-            - 6000
-            description: error and warning codes to ignore (will be placed in ignored array response)    
+            properties:
+              code:
+                type: string
+                format: string
+                example: "0100"
+
+    Service:
+      type: object
+      properties:
+        code:
+          type: string
+          description: TARMED code
+          example: 00.0010
+        ref_code:
+          type: string
+          description: TARMED reference code
+          example: 00.0010
+        quantity:
+          type: number
+          format: integer
+        session:
+          type: number
+          format: integer
+        date:
+          type: string
+          format: date
+        internal_id:
+          oneOf:
+            - type: string
+            - type: integer
+          format: integer
+          example: 12345
+    Report:
+      type: object
+      properties:
+        validation:
+          type: string
+          enum: [valid, invalid]
+          description: >
+            validation status
+             * `valid` - validation succeeded
+             * `invalid` - validation failed, detailled information in errors array
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorCode"
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorCode"
+        ignored:
+          type: object
+          description: ignored errors and warnings when configuration option `ignore_errors` is set
+          properties:
+            errors:
+              type: array
+              items:
+                $ref: "#/components/schemas/ErrorCode"
+            warnings:
+              type: array
+              items:
+                $ref: "#/components/schemas/ErrorCode"
+    ErrorCode:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: >
+            error code:
+             * `2000` - TARMED version not found
+             * `2001` - TARMED code not found
+             * `2010` - Cumulation invalid: exclusion
+             * `2020` - Cumulation invalid: limited inclusion
+             * `2051` - Missing reference (addition)
+             * `2052` - Referenced parent not listed
+             * `2053` - Referenced parent not allowed
+             * `2055` - Reference error: service type main (H)*
+             * `2056` - Reference error: service type addition (Z)*
+             * `2057` - Reference error: service type reference (R)
+             * `2058` - Reference error: service type special addition (B)*
+             * `2059` - Reference error: service type pro memoria (M)*
+             * `3001` - Patient error: invalid gender (*)
+             * `3002` - Patient error: invalid date of birth
+             * `3010` - Patient error: service not allowed for gender
+             * `3011` - Patient error: service not allowed for patient's age
+             * `4002` - Service attribute error:  invalid date
+             * `5007` - Quantity error: quantity per session invalid
+             * `5021` - Quantity error: quantity per day invalid
+             * `5022` - Quantity error: quantity per week invalid
+             * `5023` - Quantity error: quantity per month invalid
+             * `5026` - Quantity error: quantity per year invalid
+             * `6000` - Qualification error: service not allowed due to missing qualification
+             * `6004` - Qualification error: qualification not found
+             * `6005` - Qualification error: malformed physician, qualification format
+             * `6100` - Qualification warning: qualification not set.
+             * `6101` - Qualification warning: qualification not set. Service has special cumulation exceptions.
+             * `7000` - Warning: Duplicate entry in session found
+             *: not implemented
+        message:
+          type: string
+          description: Additional detail about the validation error
+        index:
+          type: number
+          format: integer
+          description: When an array was given, index points to the validated element
+        internal_id:
+          oneOf:
+            - type: string
+            - type: integer
+          format: integer
+          example: 12345
+          description: ID of given position in request which the error or warning refers to.
     TarmedServiceValues:
       allOf:
       - type: object
@@ -378,117 +493,7 @@ components:
         valid_from: "2018-01-01"
         valid_until: "2999-12-31"
         change_date: "2017-03-12"
-    Position:
-      type: object
-      properties:
-        code:
-          type: string
-          description: TARMED code
-          example: 00.0010
-        ref_nr:
-          type: string
-          description: TARMED reference code
-          example: 00.0010
-        quantity:
-          type: number
-          format: integer
-        session:
-          type: number
-          format: integer
-        date:
-          type: string
-          format: date
-        internal_id:
-          oneOf:
-            - type: string
-            - type: integer
-          format: integer
-          example: 12345
-          
-    ValidationReport:
-      type: object
-      properties:
-        validation:
-          type: string
-          enum: [valid, invalid]
-          description: >
-            validation status
-             * `valid` - validation succeeded
-             * `invalid` - validation failed, detailled information in errors array
-        errors:
-          type: array
-          items:
-            $ref: "#/components/schemas/ErrorCode"
-        warnings:
-          type: array
-          items:
-            $ref: "#/components/schemas/ErrorCode"
-        ignored:
-          type: object
-          description: ignored errors and warnings when configuration option `ignore_errors` is set
-          properties:
-            errors:
-              type: array
-              items:
-                $ref: "#/components/schemas/ErrorCode"
-            warnings:
-              type: array
-              items:
-                $ref: "#/components/schemas/ErrorCode"
-        
 
-    ErrorCode:
-      type: object
-      properties:
-        code:
-          type: integer
-          description: >
-            error code:
-             * `2000` - TARMED version not found
-             * `2001` - TARMED code not found
-             * `2010` - Cumulation invalid: exclusion
-             * `2020` - Cumulation invalid: limited inclusion
-             * `2051` - Missing reference (addition)
-             * `2052` - Referenced parent not listed
-             * `2053` - Referenced parent not allowed
-             * `2055` - Reference error: service type main (H)*
-             * `2056` - Reference error: service type addition (Z)*
-             * `2057` - Reference error: service type reference (R)
-             * `2058` - Reference error: service type special addition (B)*
-             * `2059` - Reference error: service type pro memoria (M)*
-             * `3001` - Patient error: invalid gender (*)
-             * `3002` - Patient error: invalid date of birth
-             * `3010` - Patient error: service not allowed for gender
-             * `3011` - Patient error: service not allowed for patient's age
-             * `4002` - Service attribute error:  invalid date
-             * `5007` - Quantity error: quantity per session invalid
-             * `5021` - Quantity error: quantity per day invalid
-             * `5022` - Quantity error: quantity per week invalid
-             * `5023` - Quantity error: quantity per month invalid
-             * `5026` - Quantity error: quantity per year invalid
-             * `6000` - Qualification error: service not allowed due to missing qualification
-             * `6004` - Qualification error: qualification not found
-             * `6005` - Qualification error: malformed physician, qualification format
-             * `6100` - Qualification warning: qualification not set.
-             * `6101` - Qualification warning: qualification not set. Service has special cumulation exceptions.
-             * `7000` - Warning: Duplicate entry in session found
-             *: not implemented
-        message:
-          type: string
-          description: Additional detail about the validation error
-        index:
-          type: number
-          format: integer
-          description: When an array was given, index points to the validated element
-        internal_id:
-          oneOf:
-            - type: string
-            - type: integer
-          format: integer
-          example: 12345
-          description: ID of given position in request which the error or warning refers to.
-
-          
   parameters:
     locale:
       name: locale
@@ -508,7 +513,7 @@ components:
         TARMED tarif version
          * `01.09` -  (default, if not set)
          * `01.08.01_BR`
-         * List of all versions: [http://www.tarmed-browser.ch/de/versionen](http://www.tarmed-browser.ch/de/versionen)
+         * List of all versions: [https://www.tarmed-browser.ch/de/versionen](https://www.tarmed-browser.ch/de/versionen)
       schema:
         type: string
         example: 01.09
@@ -526,9 +531,3 @@ components:
         WWW_Authenticate:
           schema:
             type: string
-    ValidationStatus:
-      description: Validation status report
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ValidationReport"
