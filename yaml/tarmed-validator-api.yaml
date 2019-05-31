@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: "0.3"
+  version: "0.4"
   title: TARMED Validator API
   description: |
     API for requesting & validating TARMED Data.
@@ -45,13 +45,15 @@ paths:
   /validate:
     put:
       summary: Validate TARMED services
+      description: |
+        Validate multiple TARMED services in a single requests. Useful for validating single invoices.
       tags:
         - validator
       parameters:
         - $ref: "#/components/parameters/locale"
         - $ref: "#/components/parameters/tarmedVersion"
       requestBody:
-        description: Invoice information with TARMED services
+        description: Payload with configuration, patient, physician and services.
         required: true
         content:
           application/json:
@@ -59,46 +61,60 @@ paths:
               type: object
               properties:
                 config:
-                  type: object
-                  properties:
-                    ignore_errors:
-                      type: array
-                      items:
-                        type: number
-                        format: integer
-                        example:
-                        - 5007
-                        - 6000
-                        description: error and warning codes to ignore (will be placed in ignored array response)
+                  $ref: "#/components/schemas/ValidationConfiguration"
                 patient:
-                  type: object
-                  properties:
-                    dob:
-                      type: string
-                      format: date
-                    gender:
-                      type: string
-                      enum: [f, m]
-                      description: >
-                        Gender:
-                         * `f` - Female
-                         * `m` - Male
+                  $ref: "#/components/schemas/Patient"
                 physician:
-                  type: object
-                  properties:
-                    codes:
-                      type: array
-                      items:
-                        properties:
-                          code:
-                            type: string
-                            format: string
-                            example: "0100"
-                      
+                  $ref: "#/components/schemas/Physician"
                 services:
                   type: array
                   items:
                     $ref: "#/components/schemas/Position"
+      responses:
+        "200":
+          $ref: "#/components/responses/ValidationStatus"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  /validate-invoices:
+    put:
+      summary: Validate TARMED services structured by bills
+      description: |
+        Validate multiple invoices with multiple TARMED services in a single requests. Useful for validating multiple invoices (as presented to a patient).
+      tags:
+        - validator
+      parameters:
+        - $ref: "#/components/parameters/locale"
+        - $ref: "#/components/parameters/tarmedVersion"
+      requestBody:
+        description: Payload with configuration, patient, physician and invoices with services.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                config:
+                  $ref: "#/components/schemas/ValidationConfiguration"
+                patient:
+                  $ref: "#/components/schemas/Patient"
+                physician:
+                  $ref: "#/components/schemas/Physician"
+                invoices:
+                  type: array
+                  description: Array of invoices
+                  items:
+                    properties:
+                      internal_id:
+                        oneOf:
+                          - type: string
+                          - type: integer
+                        format: integer
+                        example: 12345                        
+                      services:
+                        type: array
+                        description: Array of services of a single invoice
+                        items:
+                          $ref: "#/components/schemas/Position"
       responses:
         "200":
           $ref: "#/components/responses/ValidationStatus"
@@ -150,7 +166,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TarmedServiceTexts"                
+                $ref: "#/components/schemas/TarmedServiceTexts"
+  /services/texts:
+    get:
+      summary: Get texts of TARMED services by query
+      tags:
+        - browser
+      description: Find TARMED services by code or title. Returns an array of TARMED text objects with name, medical and technical interpretation. Max. 30 items returned.
+      parameters:
+        - name: q
+          in: query
+          description: String to search for.
+          schema:
+            type: string
+            example: leistung
+        - $ref: "#/components/parameters/tarmedVersion"
+        - $ref: "#/components/parameters/locale"
+      responses:
+       "200":
+          description: A JSON array of one TARMED service
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TarmedServiceTexts"        
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -158,6 +198,42 @@ components:
       in: header
       name: X-API-Key
   schemas:
+    Physician:
+      type: object
+      properties:
+        qualifications:
+          type: array
+          items:
+            properties:
+              code:
+                type: string
+                format: string
+                example: "0100"
+    Patient:
+      type: object
+      properties:
+        dob:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [f, m]
+          description: >
+            Gender:
+             * `f` - Female
+             * `m` - Male
+    ValidationConfiguration:
+      type: object
+      properties:
+        ignore_errors:
+          type: array
+          items:
+            type: number
+            format: integer
+            example:
+            - 5007
+            - 6000
+            description: error and warning codes to ignore (will be placed in ignored array response)    
     TarmedServiceValues:
       allOf:
       - type: object
@@ -389,10 +465,13 @@ components:
              * `5021` - Quantity error: quantity per day invalid
              * `5022` - Quantity error: quantity per week invalid
              * `5023` - Quantity error: quantity per month invalid
+             * `5026` - Quantity error: quantity per year invalid
              * `6000` - Qualification error: service not allowed due to missing qualification
              * `6004` - Qualification error: qualification not found
              * `6005` - Qualification error: malformed physician, qualification format
-             * `7000` - Warning: Duplicate entry found (same date & session)
+             * `6100` - Qualification warning: qualification not set.
+             * `6101` - Qualification warning: qualification not set. Service has special cumulation exceptions.
+             * `7000` - Warning: Duplicate entry in session found
              *: not implemented
         message:
           type: string
