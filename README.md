@@ -11,6 +11,9 @@ This API is currently under development. A free preview version (path /v0) is av
 
 ### /v0 (preview)
 
+[0.4.1](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/0.4.1)
+- [x] Add validation for per case rules (5008, 5108)
+
 [0.4](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/0.4)
 - [x] Add endpoint /validate-invoices for validating multiple invoices
 - [x] Add quantity per year validation
