@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: "0.4"
+  version: "0.4.1"
   title: TARMED Validator API
   description: |
     API for requesting & validating TARMED Data.
@@ -114,6 +114,13 @@ paths:
                           - type: integer
                         format: integer
                         example: 12345                        
+                      case_nr:
+                        oneOf:
+                          - type: string
+                          - type: integer
+                        format: string
+                        example: "C-001"
+                        description: Case reference of the invoice. Needed for validation of service rules per case.
                       services:
                         type: array
                         description: Array of services of a single invoice
@@ -324,10 +331,12 @@ components:
              * `3011` - Patient error: service not allowed for patient's age
              * `4002` - Service attribute error:  invalid date
              * `5007` - Quantity error: quantity per session invalid
+             * `5008` - Quantity error: quantity per case invalid
              * `5021` - Quantity error: quantity per day invalid
              * `5022` - Quantity error: quantity per week invalid
              * `5023` - Quantity error: quantity per month invalid
              * `5026` - Quantity error: quantity per year invalid
+             * `5108` - Quantity warning: case not set for service with matching rule
              * `6000` - Qualification error: service not allowed due to missing qualification
              * `6004` - Qualification error: qualification not found
              * `6005` - Qualification error: malformed physician, qualification format
