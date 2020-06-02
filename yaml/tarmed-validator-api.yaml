@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: "0.4.1"
+  version: "0.4.2"
   title: TARMED Validator API
   description: |
     API for requesting & validating TARMED Data.
@@ -267,6 +267,13 @@ components:
         session:
           type: number
           format: integer
+        side:
+          type: string
+          enum: [l, r]
+          description: >
+            Gender:
+             * `l` - left
+             * `r` - right
         date:
           type: string
           format: date
@@ -325,13 +332,16 @@ components:
              * `2057` - Reference error: service type reference (R)
              * `2058` - Reference error: service type special addition (B)*
              * `2059` - Reference error: service type pro memoria (M)*
+             * `2070` - Side error: side of service not defined
+             * `2071` - Side error: invalid side given
              * `3001` - Patient error: invalid gender (*)
              * `3002` - Patient error: invalid date of birth
              * `3010` - Patient error: service not allowed for gender
              * `3011` - Patient error: service not allowed for patient's age
-             * `4002` - Service attribute error:  invalid date
+             * `4002` - Service attribute error: invalid date
              * `5007` - Quantity error: quantity per session invalid
              * `5008` - Quantity error: quantity per case invalid
+             * `5010` - Quantity error: quantity per side invalid
              * `5021` - Quantity error: quantity per day invalid
              * `5022` - Quantity error: quantity per week invalid
              * `5023` - Quantity error: quantity per month invalid
@@ -343,6 +353,7 @@ components:
              * `6100` - Qualification warning: qualification not set.
              * `6101` - Qualification warning: qualification not set. Service has special cumulation exceptions.
              * `7000` - Warning: Duplicate entry in session found
+             
              *: not implemented
         message:
           type: string
