@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: "0.4.2"
+  version: "0.4.3"
   title: TARMED Validator API
   description: |
     API for requesting & validating TARMED Data.
@@ -341,6 +341,7 @@ components:
              * `4002` - Service attribute error: invalid date
              * `5007` - Quantity error: quantity per session invalid
              * `5008` - Quantity error: quantity per case invalid
+             * `5009` - Quantity error: quantity per patient invalid
              * `5010` - Quantity error: quantity per side invalid
              * `5021` - Quantity error: quantity per day invalid
              * `5022` - Quantity error: quantity per week invalid
