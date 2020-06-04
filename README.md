@@ -11,6 +11,10 @@ This API is currently under development. A free preview version (path /v0) is av
 
 ### /v0 (preview)
 
+[0.4.4](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/0.4.4)
+- [x] Add validation for invalid patient gender (3001)
+- [x] Optimize error descriptions
+
 [0.4.3](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/0.4.3)
 - [x] Add validation for per patient rules (5009)
 
