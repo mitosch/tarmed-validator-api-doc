@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: "0.4.3"
+  version: "0.4.4"
   title: TARMED Validator API
   description: |
     API for requesting & validating TARMED Data.
@@ -327,14 +327,10 @@ components:
              * `2051` - Missing reference (addition)
              * `2052` - Referenced parent not listed
              * `2053` - Referenced parent not allowed
-             * `2055` - Reference error: service type main (H)*
-             * `2056` - Reference error: service type addition (Z)*
              * `2057` - Reference error: service type reference (R)
-             * `2058` - Reference error: service type special addition (B)*
-             * `2059` - Reference error: service type pro memoria (M)*
              * `2070` - Side error: side of service not defined
              * `2071` - Side error: invalid side given
-             * `3001` - Patient error: invalid gender (*)
+             * `3001` - Patient error: invalid gender
              * `3002` - Patient error: invalid date of birth
              * `3010` - Patient error: service not allowed for gender
              * `3011` - Patient error: service not allowed for patient's age
@@ -354,8 +350,6 @@ components:
              * `6100` - Qualification warning: qualification not set.
              * `6101` - Qualification warning: qualification not set. Service has special cumulation exceptions.
              * `7000` - Warning: Duplicate entry in session found
-             
-             *: not implemented
         message:
           type: string
           description: Additional detail about the validation error
