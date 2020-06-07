@@ -11,6 +11,10 @@ This API is currently under development. A free preview version (path /v0) is av
 
 ### /v0 (preview)
 
+[0.5.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/0.5.0)
+- [x] Add validation for inaccurate quantity rules, like (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) (5011, 5012, 5013, 5014, 5015, 5016, 5017, 5018, 5019, 5031, 5040, 5043)
+- [x] Add possibility to activate inaccurate quantity rules by setting the conditions (inaccurate_quantity_warnings, inaccurate_quantity_warnings)
+
 [0.4.4](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/0.4.4)
 - [x] Add validation for invalid patient gender (3001)
 - [x] Optimize error descriptions
@@ -55,7 +59,8 @@ Example request body `GET /validate`:
   "locale": "de",
   "tarmed_version": "01.09",
   "config": {
-    "ignore_errors": [ 5007 ]
+    "ignore_errors": [ 5007 ],
+    "conditions": [ "inaccurate_quantity_warnings" ]
   },
   "patient": {
     "dob": "1981-03-30",
