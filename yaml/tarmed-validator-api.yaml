@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: "0.4.4"
+  version: "0.5.0"
   title: TARMED Validator API
   description: |
     API for requesting & validating TARMED Data.
@@ -225,6 +225,18 @@ components:
             - 5007
             - 6000
             description: error and warning codes to ignore (will be placed in ignored array response)
+        conditions:
+          type: array
+          items:
+            type: string
+            enum:
+            - inaccurate_quantity_warnings
+            - inaccurate_quantity_errors
+            description: >
+              Set special conditions for validation options. Available conditions are:
+              
+              * `inaccurate_quantity_warnings` - Validate inaccurate quantity rules (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) which can't be validated by the given data as warnings.
+              * `inaccurate_quantity_errors` - Validate inaccurate quantity rules (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) which can't be validated by the given data as errors. inaccurate_quantity_errors overwrites inaccurate_quantity_warnings if both conditions are given.
     Patient:
       type: object
       properties:
@@ -339,10 +351,22 @@ components:
              * `5008` - Quantity error: quantity per case invalid
              * `5009` - Quantity error: quantity per patient invalid
              * `5010` - Quantity error: quantity per side invalid
+             * `5011` - Quantity error: quantity per inhabitation (Aufenthalt) invalid (i)
+             * `5012` - Quantity error: quantity per test serie (Testreihe) invalid (i)
+             * `5013` - Quantity error: quantity per pregnancy (Schwangerschaft) invalid (i)
+             * `5014` - Quantity error: quantity per birth (Geburt) invalid (i)
+             * `5015` - Quantity error: quantity per radiation phase (Bestrahlungsphase) invalid (i)
+             * `5016` - Quantity error: quantity per transmittal (Einsendung) invalid (i)
+             * `5017` - Quantity error: quantity per autopsy (Autopsie) invalid (i)
+             * `5018` - Quantity error: quantity per expertise (Gutachten) invalid (i)
+             * `5019` - Quantity error: quantity per intervention (Eingriff) invalid (i)
              * `5021` - Quantity error: quantity per day invalid
              * `5022` - Quantity error: quantity per week invalid
              * `5023` - Quantity error: quantity per month invalid
              * `5026` - Quantity error: quantity per year invalid
+             * `5031` - Quantity error: quantity per radiation phase and volume (Bestrahlungsphase und Bestrahlungsvolumen) invalid (i)
+             * `5040` - Quantity error: quantity per joint region (Gelenkregion) invalid (i)
+             * `5043` - Quantity error: quantity per examination (Untersuchung) invalid (i)
              * `5108` - Quantity warning: case not set for service with matching rule
              * `6000` - Qualification error: service not allowed due to missing qualification
              * `6004` - Qualification error: qualification not found
@@ -350,6 +374,8 @@ components:
              * `6100` - Qualification warning: qualification not set.
              * `6101` - Qualification warning: qualification not set. Service has special cumulation exceptions.
              * `7000` - Warning: Duplicate entry in session found
+             
+             (i): inaccurrate validation, see config.conditions for details
         message:
           type: string
           description: Additional detail about the validation error
