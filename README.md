@@ -144,6 +144,8 @@ The following list shows what the TARMED Validator API is capabable of and which
 | `5040` | Quantity error: quantity per joint region (Gelenkregion) invalid | (1) |
 | `5043` | Quantity error: quantity per examination (Untersuchung) invalid | (1) |
 | `5108` | Quantity warning: case not set for service with matching rule | |
+| `5222` | Quantity error: quantity of service group per week invalid | |
+| `5223` | Quantity error: quantity of service group per month invalid | |
 | `6000` | Qualification error: service not allowed due to missing qualification | |
 | `6004` | Qualification error: qualification not found | |
 | `6005` | Qualification error: malformed physician, qualification format | |
@@ -449,6 +451,10 @@ Response:
 
 
 ## Changelog
+
+[0.5.1](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/0.5.1)
+- [x] Quantity rules of service-groups are now cumulated together and validated as separate errors (5222, 5223)
+- [x] Optimize error descriptions for time range validation (5021, 5022, 5023, 5026, 5222, 5223)
 
 [0.5.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/0.5.0)
 - [x] Add validation for inaccurate quantity rules, like (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) (5011, 5012, 5013, 5014, 5015, 5016, 5017, 5018, 5019, 5031, 5040, 5043)
