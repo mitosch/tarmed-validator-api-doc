@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: "0.5.0"
+  version: "0.5.1"
   title: TARMED Validator API
   description: |
     API for requesting & validating TARMED Data.
@@ -368,6 +368,8 @@ components:
              * `5040` - Quantity error: quantity per joint region (Gelenkregion) invalid (i)
              * `5043` - Quantity error: quantity per examination (Untersuchung) invalid (i)
              * `5108` - Quantity warning: case not set for service with matching rule
+             * `5222` - Quantity error: quantity of service group per week invalid
+             * `5223` - Quantity error: quantity of service group per month invalid
              * `6000` - Qualification error: service not allowed due to missing qualification
              * `6004` - Qualification error: qualification not found
              * `6005` - Qualification error: malformed physician, qualification format
