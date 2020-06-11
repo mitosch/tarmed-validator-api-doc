@@ -496,12 +496,12 @@ Response:
 
 ## Roadmap
 
-The following features will be implemented:
+The following features will be implemented in the future:
 
-### /v0 -> /v1
-
-- [ ] Validation reporting in french, italian
 - [ ] Special validation conditions by configuration for allowing all general services of LG-18 (Allgemeine Grundleistungen)
+- [ ] Special validation condition for allowing all cumulations over service blocks (unlike the general rule defines it)
+- [ ] Additional TARMED data requests for: requesting all rules for a single service, requesting service groups/blocks of services, requesting services of a group/block, etc.
+- [ ] Validation reporting in french, italian
 - [x] Special validation conditions by configuration for inaccurate quantity rules
 - [x] Validate other service types, if possible (Pro Memoria, Zusatzleistung)
 - [x] Notes for quantity rules which can't be validated technically (e.g. Pro Gutachten)
