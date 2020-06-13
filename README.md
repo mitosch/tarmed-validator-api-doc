@@ -6,8 +6,6 @@ The TARMED Validator API allows you to validate and access TARMED data. The main
 
 The full documentation is available on SwaggerHub: [TARMED Validator API](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed)
 
-**NOTE**: The final, unlimited API (/v1) will be available soon (Q2/2020). Until release the free preview version (/v0) is available and will be limited by daily usage.
-
 ## Configuration
 
 The validation can be configured with several attributes of the `config` object to ignore errors, use inaccurate quantity validations and more:
