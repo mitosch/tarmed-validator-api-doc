@@ -1,14 +1,15 @@
 openapi: 3.0.0
 info:
-  version: "0.5.1"
+  version: "1.0.0"
   title: TARMED Validator API
   description: |
     API for requesting & validating TARMED Data.
     
-    **IMPORTANT:**
-     * This API is currently under development. A free preview version (path `/v0`) is currently available and will be deprecated after releasing the production version `/v1`).
-     
-    Please contact me (info@tarmed-browser.ch) for an API-Key.
+    By the `/validate` endpoint, it is possible to validate multiple TARMED positions on a invoice for validity. The endpoint `/validate-invoices` can validate multiple invoices (e.g. to full history of a patient) to verify, if the TARMED tarifs are valid to us (quantity, cumulation and much more).
+    
+    The `ErrorCode`(see below) schema gives a overview about the implemented validation possibilities.
+    
+    Please contact me (info@tarmed-validator.ch) for an API-Key.
 
     Status, roadmap, bugtracker and more information can be found at GitHub: [https://github.com/mitosch/tarmed-validator-api-doc](https://github.com/mitosch/tarmed-validator-api-doc)
     
@@ -27,9 +28,9 @@ servers:
           - api
           - api.staging
       version:
-        default: v0
+        default: v1
         enum:
-          - v0 # preview version
+          - v1
 security:
   - ApiKeyAuth: []
 
