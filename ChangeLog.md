@@ -2,6 +2,9 @@
 
 ## Changelog
 
+[1.1.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/1.1.0)
+- [x] Add possibility to ignore all cumulation rules by condition `ignore_cumulations`
+
 [1.0.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/1.0.0)
 - [x] Performance optimization
 - [x] Several optimizations of error descriptions and minor bugfixes

@@ -44,6 +44,7 @@ Possible condition options are:
 
 | Option | Description |
 | --- | --- |
+| `ignore_cumulations` | Ignores all cumulation erros/warnings and returns possible errors/warnings in the `ignored` object. Useful focus validation of TARMED invoices to quantity, patient and reference rules. |
 | `inaccurate_quantity_warnings` | Validate inaccurate quantity rules (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) which can't be validated by the given data as warnings. |
 | `inaccurate_quantity_errors` | Validate inaccurate quantity rules (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) which can't be validated by the given data as errors. inaccurate_quantity_errors overwrites inaccurate_quantity_warnings if both conditions are given. |
 
