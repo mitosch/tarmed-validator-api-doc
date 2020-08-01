@@ -2,6 +2,20 @@
 
 ## Changelog
 
+[1.3.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/1.3.0)
+- [x] New browser endpoints:
+  - `/browser/services`
+  - `/browser/services/{code}`
+  - `/browser/chapters`
+  - `/browser/chapters/{code}`
+  - `/browser/service-blocks`
+  - `/browser/service-blocks/{code}`
+  - `/browser/service-groups`
+  - `/browser/service-groups/{code}`
+
+[1.2.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/1.2.0)
+- [x] Add posibility to force cumulation validity by chapters.
+
 [1.1.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/1.1.0)
 - [x] Add possibility to ignore all cumulation rules by condition `ignore_cumulations`
 

@@ -35,18 +35,24 @@ Example:
 ```json
 {
   "config": {
-    "conditions": [ "inaccurate_quantity_warnings" ]
+    "conditions": {
+      "inaccurate_quantity_rules": "warning",
+      "ignore_cumulations": true,
+      "force_cumulation_validity": {
+        "chapters": ["00.01", "00.03"]
+      }
+    }
   }
 }
 ```
 
 Possible condition options are:
 
-| Option | Description |
-| --- | --- |
-| `ignore_cumulations` | Ignores all cumulation erros/warnings and returns possible errors/warnings in the `ignored` object. Useful focus validation of TARMED invoices to quantity, patient and reference rules. |
-| `inaccurate_quantity_warnings` | Validate inaccurate quantity rules (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) which can't be validated by the given data as warnings. |
-| `inaccurate_quantity_errors` | Validate inaccurate quantity rules (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) which can't be validated by the given data as errors. inaccurate_quantity_errors overwrites inaccurate_quantity_warnings if both conditions are given. |
+| Condition Option | Description | Type | Default |
+| --- | --- | --- | --- |
+| `inaccurate_quantity_rules` | Validate inaccurate quantity rules (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) which can't be validated by the given data:<br>`"warning"`: return validation result as warning<br>`"error"`: return validation result as error<br>`null`: option is not set, quantity rules are ignored. | `string` | `null` |
+| `ignore_cumulations` | Ignores all cumulation erros/warnings and returns possible errors/warnings in the `ignored` object. Useful to focus validation of TARMED invoices to quantity, patient and reference rules:<br>`true`: cumulation errors/warnings are returned in the `ignored` object<br>`false`: cumulation errors/warnings are not ignored for validation | `boolean` | `false` |
+| `force_cumulation_validity` | Forces all services of the given types to be valid, even if these are defined to not to be included by cumulation exclusion. Quantity rules are still validated. The given types are arrays with strings. Available options:<br>`chapters: ["00.01", "..."]`: Services of these chapters will always be valid. | `object` | `{}` |
 
 ## Validation Requests
 
