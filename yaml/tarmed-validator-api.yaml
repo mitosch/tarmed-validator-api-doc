@@ -1,218 +1,300 @@
 openapi: 3.0.0
 info:
-  version: "1.1.0"
   title: TARMED Validator API
   description: |
     API for requesting & validating TARMED Data.
-    
+
     By the `/validate` endpoint, it is possible to validate multiple TARMED positions on a invoice for validity. The endpoint `/validate-invoices` can validate multiple invoices (e.g. to full history of a patient) to verify, if the TARMED tarifs are valid to us (quantity, cumulation and much more).
-    
+
     The `ErrorCode`(see below) schema gives a overview about the implemented validation possibilities.
-    
+
     Please contact me (info@tarmed-validator.ch) for an API-Key.
 
     Status, roadmap, bugtracker and more information can be found at GitHub: [https://github.com/mitosch/tarmed-validator-api-doc](https://github.com/mitosch/tarmed-validator-api-doc)
-    
+
     Descriptions of TARMED values refer to the original MS Access database (e.g. `Leistungsnummer (LEISTUNG.LNR)`).
-    
+
     For more information about TARMED, please visit these resources:
-    
+
       * [Tarifsystem TARMED, Bundesamt für Gesundheit](https://www.bag.admin.ch/bag/de/home/versicherungen/krankenversicherung/krankenversicherung-leistungen-tarife/Aerztliche-Leistungen-in-der-Krankenversicherung/Tarifsystem-Tarmed.html)
-    
+  version: 1.3.0
 servers:
-  - url: http://{environment}.tarmed-validator.ch/api/{version}
-    variables:
-      environment:
-        default: api
-        enum:
-          - api
-          - api.staging
-      version:
-        default: v1
-        enum:
-          - v1
+- url: http://{environment}.tarmed-validator.ch/api/{version}
+  variables:
+    environment:
+      default: api
+      enum:
+      - api
+      - api.staging
+    version:
+      default: v1
+      enum:
+      - v1
 security:
-  - ApiKeyAuth: []
-
+- ApiKeyAuth: []
 tags:
-  - name: browser
-    description: Read TARMED data (TARMED Browser API)
-    externalDocs:
-      url: http://www.tarmed-browser.ch
-  - name: validator
-    description: Validate TARMED data (TARMED Validator API)
-
+- name: browser
+  description: Read TARMED data (TARMED Browser API)
+  externalDocs:
+    url: http://www.tarmed-browser.ch
+- name: validator
+  description: Validate TARMED data (TARMED Validator API)
 paths:
   /validate:
     put:
+      tags:
+      - validator
       summary: Validate TARMED services
       description: |
         Validate multiple TARMED services in a single requests. Useful for validating single invoices.
-      tags:
-        - validator
       parameters:
-        - $ref: "#/components/parameters/locale"
-        - $ref: "#/components/parameters/tarmedVersion"
+      - name: locale
+        in: query
+        description: |
+          Language
+           * `de` - german (defaut, if not set)
+           * `fr` - french
+           * `it` - italian
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: de
+      - name: tarmed_version
+        in: query
+        description: |
+          TARMED tarif version
+           * `01.09` -  (default, if not set)
+           * `01.08.01_BR`
+           * List of all versions: [https://www.tarmed-browser.ch/de/versionen](https://www.tarmed-browser.ch/de/versionen)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: "1.09"
       requestBody:
         description: Payload with configuration, patient, physician and services.
-        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                config:
-                  $ref: "#/components/schemas/Config"
-                patient:
-                  $ref: "#/components/schemas/Patient"
-                physician:
-                  $ref: "#/components/schemas/Physician"
-                services:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/Service"
+              $ref: '#/components/schemas/body'
+        required: true
       responses:
         "200":
           description: Validation status report
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Report"
+                $ref: '#/components/schemas/Report'
         "401":
-          $ref: "#/components/responses/UnauthorizedError"
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
   /validate-invoices:
     put:
+      tags:
+      - validator
       summary: Validate TARMED services structured by bills
       description: |
         Validate multiple invoices with multiple TARMED services in a single requests. Useful for validating multiple invoices (as presented to a patient).
-      tags:
-        - validator
       parameters:
-        - $ref: "#/components/parameters/locale"
-        - $ref: "#/components/parameters/tarmedVersion"
+      - name: locale
+        in: query
+        description: |
+          Language
+           * `de` - german (defaut, if not set)
+           * `fr` - french
+           * `it` - italian
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: de
+      - name: tarmed_version
+        in: query
+        description: |
+          TARMED tarif version
+           * `01.09` -  (default, if not set)
+           * `01.08.01_BR`
+           * List of all versions: [https://www.tarmed-browser.ch/de/versionen](https://www.tarmed-browser.ch/de/versionen)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: "1.09"
       requestBody:
-        description: Payload with configuration, patient, physician and invoices with services.
-        required: true
+        description: Payload with configuration, patient, physician and invoices with
+          services.
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                config:
-                  $ref: "#/components/schemas/Config"
-                patient:
-                  $ref: "#/components/schemas/Patient"
-                physician:
-                  $ref: "#/components/schemas/Physician"
-                invoices:
-                  type: array
-                  description: Array of invoices
-                  items:
-                    properties:
-                      internal_id:
-                        oneOf:
-                          - type: string
-                          - type: integer
-                        format: integer
-                        example: 12345                        
-                      case_nr:
-                        oneOf:
-                          - type: string
-                          - type: integer
-                        format: string
-                        example: "C-001"
-                        description: Case reference of the invoice. Needed for validation of service rules per case.
-                      services:
-                        type: array
-                        description: Array of services of a single invoice
-                        items:
-                          $ref: "#/components/schemas/Service"
+              $ref: '#/components/schemas/body_1'
+        required: true
       responses:
         "200":
           description: Validation status report
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Report"
+                $ref: '#/components/schemas/Report'
         "401":
-          $ref: "#/components/responses/UnauthorizedError"
+          description: API key is missing or invalid
+          headers:
+            WWW_Authenticate:
+              style: simple
+              explode: false
+              schema:
+                type: string
   /services/values/{code}:
     get:
-      summary: Get values of a TARMED service
       tags:
-        - browser
+      - browser
+      summary: Get values of a TARMED service
       description: Get values of a TARMED service by nr.
       parameters:
-        - name: code
-          in: path
-          description: TARMED Leistungsnummer
-          required: true
-          schema:
-            type: string
-            pattern: '^\d{2}\.\d{4}$'
-          example: 00.0010
-        - $ref: "#/components/parameters/tarmedVersion"
+      - name: code
+        in: path
+        description: TARMED Leistungsnummer
+        required: true
+        style: simple
+        explode: false
+        schema:
+          pattern: ^\d{2}\.\d{4}$
+          type: string
+        example: 0.001
+      - name: tarmed_version
+        in: query
+        description: |
+          TARMED tarif version
+           * `01.09` -  (default, if not set)
+           * `01.08.01_BR`
+           * List of all versions: [https://www.tarmed-browser.ch/de/versionen](https://www.tarmed-browser.ch/de/versionen)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: "1.09"
       responses:
-       "200":
+        "200":
           description: A JSON array of one TARMED service
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TarmedServiceValues"
+                $ref: '#/components/schemas/TarmedServiceValues'
   /services/texts/{code}:
     get:
-      summary: Get texts of a TARMED service
       tags:
-        - browser
-      description: Get texts like name, medical and technical interpretation of a TARMED service by code.
+      - browser
+      summary: Get texts of a TARMED service
+      description: Get texts like name, medical and technical interpretation of a
+        TARMED service by code.
       parameters:
-        - name: code
-          in: path
-          description: TARMED Leistungsnummer
-          required: true
-          schema:
-            type: string
-            pattern: '^\d{2}\.\d{4}$'
-          example: 00.0010
-        - $ref: "#/components/parameters/tarmedVersion"
-        - $ref: "#/components/parameters/locale"
+      - name: code
+        in: path
+        description: TARMED Leistungsnummer
+        required: true
+        style: simple
+        explode: false
+        schema:
+          pattern: ^\d{2}\.\d{4}$
+          type: string
+        example: 0.001
+      - name: tarmed_version
+        in: query
+        description: |
+          TARMED tarif version
+           * `01.09` -  (default, if not set)
+           * `01.08.01_BR`
+           * List of all versions: [https://www.tarmed-browser.ch/de/versionen](https://www.tarmed-browser.ch/de/versionen)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: "1.09"
+      - name: locale
+        in: query
+        description: |
+          Language
+           * `de` - german (defaut, if not set)
+           * `fr` - french
+           * `it` - italian
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: de
       responses:
-       "200":
+        "200":
           description: A JSON array of one TARMED service
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TarmedServiceTexts"
+                $ref: '#/components/schemas/TarmedServiceTexts'
   /services/texts:
     get:
-      summary: Get texts of TARMED services by query
       tags:
-        - browser
-      description: Find TARMED services by code or title. Returns an array of TARMED text objects with name, medical and technical interpretation. Max. 30 items returned.
+      - browser
+      summary: Get texts of TARMED services by query
+      description: Find TARMED services by code or title. Returns an array of TARMED
+        text objects with name, medical and technical interpretation. Max. 30 items
+        returned.
       parameters:
-        - name: q
-          in: query
-          description: String to search for.
-          schema:
-            type: string
-            example: leistung
-        - $ref: "#/components/parameters/tarmedVersion"
-        - $ref: "#/components/parameters/locale"
+      - name: q
+        in: query
+        description: String to search for.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: leistung
+      - name: tarmed_version
+        in: query
+        description: |
+          TARMED tarif version
+           * `01.09` -  (default, if not set)
+           * `01.08.01_BR`
+           * List of all versions: [https://www.tarmed-browser.ch/de/versionen](https://www.tarmed-browser.ch/de/versionen)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: "1.09"
+      - name: locale
+        in: query
+        description: |
+          Language
+           * `de` - german (defaut, if not set)
+           * `fr` - french
+           * `it` - italian
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: de
       responses:
-       "200":
+        "200":
           description: A JSON array of one TARMED service
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/TarmedServiceTexts"        
+                  $ref: '#/components/schemas/TarmedServiceTexts'
 components:
-  securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: X-API-Key
   schemas:
     Config:
       type: object
@@ -221,26 +303,11 @@ components:
           type: array
           items:
             type: number
+            description: error and warning codes to ignore (will be placed in ignored
+              array response)
             format: integer
-            example:
-            - 5007
-            - 6000
-            description: error and warning codes to ignore (will be placed in ignored array response)
         conditions:
-          type: array
-          items:
-            type: string
-            enum:
-            - inaccurate_quantity_warnings
-            - inaccurate_quantity_errors
-            description: >
-              Set special conditions for validation options. Available conditions are:
-              
-              * `ignore_cumulations` - Ignores all cumulation erros/warnings and returns possible errors/warnings in the `ignored` object. Useful focus validation of TARMED invoices to quantity, patient and reference rules.
-              
-              * `inaccurate_quantity_warnings` - Validate inaccurate quantity rules (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) which can't be validated by the given data as warnings.
-              
-              * `inaccurate_quantity_errors` - Validate inaccurate quantity rules (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) which can't be validated by the given data as errors. inaccurate_quantity_errors overwrites inaccurate_quantity_warnings if both conditions are given.
+          $ref: '#/components/schemas/Config_conditions'
     Patient:
       type: object
       properties:
@@ -249,34 +316,31 @@ components:
           format: date
         gender:
           type: string
-          enum: [f, m]
-          description: >
+          description: |
             Gender:
              * `f` - Female
              * `m` - Male
+          enum:
+          - f
+          - m
     Physician:
       type: object
       properties:
         qualifications:
           type: array
           items:
-            properties:
-              code:
-                type: string
-                format: string
-                example: "0100"
-
+            $ref: '#/components/schemas/Physician_qualifications'
     Service:
       type: object
       properties:
         code:
           type: string
           description: TARMED code
-          example: 00.0010
+          example: "0.001"
         ref_code:
           type: string
           description: TARMED reference code
-          example: 00.0010
+          example: "0.001"
         quantity:
           type: number
           format: integer
@@ -285,117 +349,105 @@ components:
           format: integer
         side:
           type: string
-          enum: [l, r]
-          description: >
+          description: |
             Gender:
              * `l` - left
              * `r` - right
+          enum:
+          - l
+          - r
         date:
           type: string
           format: date
         internal_id:
-          oneOf:
-            - type: string
-            - type: integer
           format: integer
           example: 12345
+          oneOf:
+          - type: string
+          - type: integer
     Report:
       type: object
       properties:
         validation:
           type: string
-          enum: [valid, invalid]
-          description: >
+          description: |
             validation status
              * `valid` - validation succeeded
              * `invalid` - validation failed, detailled information in errors array
+          enum:
+          - valid
+          - invalid
         errors:
           type: array
           items:
-            $ref: "#/components/schemas/ErrorCode"
+            $ref: '#/components/schemas/ErrorCode'
         warnings:
           type: array
           items:
-            $ref: "#/components/schemas/ErrorCode"
+            $ref: '#/components/schemas/ErrorCode'
         ignored:
-          type: object
-          description: ignored errors and warnings when configuration option `ignore_errors` is set
-          properties:
-            errors:
-              type: array
-              items:
-                $ref: "#/components/schemas/ErrorCode"
-            warnings:
-              type: array
-              items:
-                $ref: "#/components/schemas/ErrorCode"
+          $ref: '#/components/schemas/Report_ignored'
     ErrorCode:
       type: object
       properties:
         code:
           type: integer
-          description: >
-            error code:
-             * `2000` - TARMED version not found
-             * `2001` - TARMED code not found
-             * `2010` - Cumulation invalid: exclusion
-             * `2020` - Cumulation invalid: limited inclusion
-             * `2051` - Missing reference (addition)
-             * `2052` - Referenced parent not listed
-             * `2053` - Referenced parent not allowed
-             * `2057` - Reference error: service type reference (R)
-             * `2070` - Side error: side of service not defined
-             * `2071` - Side error: invalid side given
-             * `3001` - Patient error: invalid gender
-             * `3002` - Patient error: invalid date of birth
-             * `3010` - Patient error: service not allowed for gender
-             * `3011` - Patient error: service not allowed for patient's age
-             * `4002` - Service attribute error: invalid date
-             * `5007` - Quantity error: quantity per session invalid
-             * `5008` - Quantity error: quantity per case invalid
-             * `5009` - Quantity error: quantity per patient invalid
-             * `5010` - Quantity error: quantity per side invalid
-             * `5011` - Quantity error: quantity per inhabitation (Aufenthalt) invalid (i)
-             * `5012` - Quantity error: quantity per test serie (Testreihe) invalid (i)
-             * `5013` - Quantity error: quantity per pregnancy (Schwangerschaft) invalid (i)
-             * `5014` - Quantity error: quantity per birth (Geburt) invalid (i)
-             * `5015` - Quantity error: quantity per radiation phase (Bestrahlungsphase) invalid (i)
-             * `5016` - Quantity error: quantity per transmittal (Einsendung) invalid (i)
-             * `5017` - Quantity error: quantity per autopsy (Autopsie) invalid (i)
-             * `5018` - Quantity error: quantity per expertise (Gutachten) invalid (i)
-             * `5019` - Quantity error: quantity per intervention (Eingriff) invalid (i)
-             * `5021` - Quantity error: quantity per day invalid
-             * `5022` - Quantity error: quantity per week invalid
-             * `5023` - Quantity error: quantity per month invalid
-             * `5026` - Quantity error: quantity per year invalid
-             * `5031` - Quantity error: quantity per radiation phase and volume (Bestrahlungsphase und Bestrahlungsvolumen) invalid (i)
-             * `5040` - Quantity error: quantity per joint region (Gelenkregion) invalid (i)
-             * `5043` - Quantity error: quantity per examination (Untersuchung) invalid (i)
-             * `5108` - Quantity warning: case not set for service with matching rule
-             * `5222` - Quantity error: quantity of service group per week invalid
-             * `5223` - Quantity error: quantity of service group per month invalid
-             * `6000` - Qualification error: service not allowed due to missing qualification
-             * `6004` - Qualification error: qualification not found
-             * `6005` - Qualification error: malformed physician, qualification format
-             * `6100` - Qualification warning: qualification not set.
-             * `6101` - Qualification warning: qualification not set. Service has special cumulation exceptions.
-             * `7000` - Warning: Duplicate entry in session found
-             
-             (i): inaccurrate validation, see config.conditions for details
+          description: "error code:\n * `2000` - TARMED version not found\n * `2001`\
+            \ - TARMED code not found\n * `2010` - Cumulation invalid: exclusion\n\
+            \ * `2020` - Cumulation invalid: limited inclusion\n * `2051` - Missing\
+            \ reference (addition)\n * `2052` - Referenced parent not listed\n * `2053`\
+            \ - Referenced parent not allowed\n * `2057` - Reference error: service\
+            \ type reference (R)\n * `2070` - Side error: side of service not defined\n\
+            \ * `2071` - Side error: invalid side given\n * `3001` - Patient error:\
+            \ invalid gender\n * `3002` - Patient error: invalid date of birth\n *\
+            \ `3010` - Patient error: service not allowed for gender\n * `3011` -\
+            \ Patient error: service not allowed for patient's age\n * `4002` - Service\
+            \ attribute error: invalid date\n * `5007` - Quantity error: quantity\
+            \ per session invalid\n * `5008` - Quantity error: quantity per case invalid\n\
+            \ * `5009` - Quantity error: quantity per patient invalid\n * `5010` -\
+            \ Quantity error: quantity per side invalid\n * `5011` - Quantity error:\
+            \ quantity per inhabitation (Aufenthalt) invalid (i)\n * `5012` - Quantity\
+            \ error: quantity per test serie (Testreihe) invalid (i)\n * `5013` -\
+            \ Quantity error: quantity per pregnancy (Schwangerschaft) invalid (i)\n\
+            \ * `5014` - Quantity error: quantity per birth (Geburt) invalid (i)\n\
+            \ * `5015` - Quantity error: quantity per radiation phase (Bestrahlungsphase)\
+            \ invalid (i)\n * `5016` - Quantity error: quantity per transmittal (Einsendung)\
+            \ invalid (i)\n * `5017` - Quantity error: quantity per autopsy (Autopsie)\
+            \ invalid (i)\n * `5018` - Quantity error: quantity per expertise (Gutachten)\
+            \ invalid (i)\n * `5019` - Quantity error: quantity per intervention (Eingriff)\
+            \ invalid (i)\n * `5021` - Quantity error: quantity per day invalid\n\
+            \ * `5022` - Quantity error: quantity per week invalid\n * `5023` - Quantity\
+            \ error: quantity per month invalid\n * `5026` - Quantity error: quantity\
+            \ per year invalid\n * `5031` - Quantity error: quantity per radiation\
+            \ phase and volume (Bestrahlungsphase und Bestrahlungsvolumen) invalid\
+            \ (i)\n * `5040` - Quantity error: quantity per joint region (Gelenkregion)\
+            \ invalid (i)\n * `5043` - Quantity error: quantity per examination (Untersuchung)\
+            \ invalid (i)\n * `5108` - Quantity warning: case not set for service\
+            \ with matching rule\n * `5222` - Quantity error: quantity of service\
+            \ group per week invalid\n * `5223` - Quantity error: quantity of service\
+            \ group per month invalid\n * `6000` - Qualification error: service not\
+            \ allowed due to missing qualification\n * `6004` - Qualification error:\
+            \ qualification not found\n * `6005` - Qualification error: malformed\
+            \ physician, qualification format\n * `6100` - Qualification warning:\
+            \ qualification not set.\n * `6101` - Qualification warning: qualification\
+            \ not set. Service has special cumulation exceptions.\n * `7000` - Warning:\
+            \ Duplicate entry in session found\n \n (i): inaccurrate validation, see\
+            \ config.conditions for details\n"
         message:
           type: string
           description: Additional detail about the validation error
         index:
           type: number
-          format: integer
           description: When an array was given, index points to the validated element
+          format: integer
         internal_id:
-          oneOf:
-            - type: string
-            - type: integer
+          description: ID of given position in request which the error or warning
+            refers to.
           format: integer
           example: 12345
-          description: ID of given position in request which the error or warning refers to.
+          oneOf:
+          - type: string
+          - type: integer
     TarmedServiceValues:
       allOf:
       - type: object
@@ -405,77 +457,81 @@ components:
             description: TARMED Leistungsnummer (LEISTUNG.LNR)
           assi_count:
             type: number
-            format: integer
             description: Anzahl Assistenten (LEISTUNG.ANZ_ASSI)
+            format: integer
           change_min:
             type: number
-            format: integer
             description: Wechselzeit (LEISTUNG.WECHSEL_MIN)
+            format: integer
           dignity_quant:
             type: string
-            description: "Dignitäts-Nr.: \"FMH\" und Nr. zweistellig (LEISTUNG.QT_DIGNITAET)"
+            description: 'Dignitäts-Nr.: "FMH" und Nr. zweistellig (LEISTUNG.QT_DIGNITAET)'
           indication_min:
             type: number
-            format: integer
             description: Befund (LEISTUNG.BEFUND_MIN)
+            format: integer
           prepost_min:
             type: number
-            format: integer
             description: Vorbereitung/Nachbereitung (LEISTUNG.VBNB_MIN)
+            format: integer
           rate_factor_assi:
             type: number
-            format: float
             description: Taxpunkte Assistent (LEISTUNG.TP_ASSI)
+            format: float
           rate_factor_doc:
             type: number
-            format: float
             description: Taxpunkte Arztleistung (LEISTUNG.TP_AL)
+            format: float
           rate_factor_pdoc:
             type: number
+            description: 'Taxpunkte Arztleistung ohne FMH (calculated: LEISTUNG.TP_AL
+              * LEISTUNG.F_AL_R)'
             format: float
-            description: "Taxpunkte Arztleistung ohne FMH (calculated: LEISTUNG.TP_AL * LEISTUNG.F_AL_R)"
           rate_factor_tech:
             type: number
-            format: float
             description: Taxpunkte Technische Leistung (LEISTUNG.TP_TL)
+            format: float
           room_min:
             type: number
-            format: integer
             description: Raumzeit (LEISTUNG.RAUM_MIN, not from Einstein ;) )
+            format: integer
           service_min:
             type: number
-            format: integer
             description: Leistung im engeren Sinne (LEISTUNG.LSTGIMES_MIN)
+            format: integer
           sex:
             type: string
-            enum: [male, female]
-            description: >
+            description: |
               Patientengeschlecht (LEISTUNG.SEX)
                * `male` - Männlich
                * `female` - Weiblich
+            enum:
+            - male
+            - female
           side:
             type: boolean
-            description: >
+            description: |
               Seitenangabe (LEISTUNG.SEITE)
                * `true` - Die Angabe auf welcher Seite die Leistung erbracht wurde ist zwingend
                * `false` - keine Seitenangabe nötig
           surcharge_doc:
             type: number
-            format: float
             description: Zuschlags- oder Reduktions-Faktor auf Arztleistung (LEISTUNG.F_AL)
+            format: float
           surcharge_pdoc:
             type: number
+            description: Zuschlags- oder Reduktions-Faktor auf Arztleistung ohne FMH
+              (LEISTUNG.F_AL_R)
             format: float
-            description: Zuschlags- oder Reduktions-Faktor auf Arztleistung ohne FMH (LEISTUNG.F_AL_R)
           surcharge_tech:
             type: number
-            format: float
             description: Zuschlags- oder Reduktions-Faktor auf techn. Leistung (LEISTUNG.F_TL)
+            format: float
         example:
-          code: 00.0010
+          code: 0.001
           assi_count: 0
           change_min: 0
-          dignity_quant: "FMH05"
+          dignity_quant: FMH05
           indication_min: 0
           prepost_min: 0
           rate_factor_assi: 0
@@ -484,97 +540,218 @@ components:
           rate_factor_tech: 8.19
           room_min: 5
           service_min: 5
-          sex: null
           side: false
           surcharge_doc: 1
           surcharge_pdoc: 0.93
           surcharge_tech: 1
-      - $ref: "#/components/schemas/TarmedDates"
+      - $ref: '#/components/schemas/TarmedDates'
     TarmedServiceTexts:
       allOf:
-        - type: object
-          properties:
-            code:
-              type: string
-              description: TARMED nr (LEISTUNG_TEXT.LNR)
-            name:
-              type: string
-              description: Name of the service (LEISTUNG_TEXT.BEZ_255)
-            medical_info:
-              type: string
-              description: Medical interpretation (LEISTUNG_TEXT.MED_INTERPRET)
-            technical_info:
-              type: string
-              description: Technical interpretation (LEISTUNG_TEXT.TECH_INTERPRET)
-            locale:
-              type: string
-              enum: [de, fr, it]
-              description: >
-                Locale:
-                 * `de` - German
-                 * `fr` - French
-                 * `it` - Italian
-          example:
-            code: "00.0010"
-            name: "Konsultation, erste 5 Min. (Grundkonsultation)"
-            medical_info: "Beinhaltet alle ärztlichen Leistungen, die der Facharzt in seiner..."
-            technical_info: "Technische Interpretation ..."
-            locale: "de"
-        - $ref: "#/components/schemas/TarmedDates"
+      - type: object
+        properties:
+          code:
+            type: string
+            description: TARMED nr (LEISTUNG_TEXT.LNR)
+          name:
+            type: string
+            description: Name of the service (LEISTUNG_TEXT.BEZ_255)
+          medical_info:
+            type: string
+            description: Medical interpretation (LEISTUNG_TEXT.MED_INTERPRET)
+          technical_info:
+            type: string
+            description: Technical interpretation (LEISTUNG_TEXT.TECH_INTERPRET)
+          locale:
+            type: string
+            description: |
+              Locale:
+               * `de` - German
+               * `fr` - French
+               * `it` - Italian
+            enum:
+            - de
+            - fr
+            - it
+        example:
+          code: "00.0010"
+          name: Konsultation, erste 5 Min. (Grundkonsultation)
+          medical_info: Beinhaltet alle ärztlichen Leistungen, die der Facharzt in
+            seiner...
+          technical_info: Technische Interpretation ...
+          locale: de
+      - $ref: '#/components/schemas/TarmedDates'
     TarmedDates:
       type: object
       properties:
         valid_from:
           type: string
-          format: date
           description: gültig von (*.GUELTIG_VON)
+          format: date
         valid_until:
           type: string
-          format: date
           description: gültig bis (*.GUELTIG_BIS)
+          format: date
         change_date:
           type: string
-          format: date
           description: mutiert am (*.MUT_DAT)
+          format: date
       example:
-        valid_from: "2018-01-01"
-        valid_until: "2999-12-31"
-        change_date: "2017-03-12"
-
+        valid_from: 2018-01-01
+        valid_until: 2999-12-31
+        change_date: 2017-03-12
+    body:
+      type: object
+      properties:
+        config:
+          $ref: '#/components/schemas/Config'
+        patient:
+          $ref: '#/components/schemas/Patient'
+        physician:
+          $ref: '#/components/schemas/Physician'
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/Service'
+    validateinvoices_invoices:
+      properties:
+        internal_id:
+          format: integer
+          example: 12345
+          oneOf:
+          - type: string
+          - type: integer
+        case_nr:
+          description: Case reference of the invoice. Needed for validation of service
+            rules per case.
+          format: string
+          example: C-001
+          oneOf:
+          - type: string
+          - type: integer
+        services:
+          type: array
+          description: Array of services of a single invoice
+          items:
+            $ref: '#/components/schemas/Service'
+    body_1:
+      type: object
+      properties:
+        config:
+          $ref: '#/components/schemas/Config'
+        patient:
+          $ref: '#/components/schemas/Patient'
+        physician:
+          $ref: '#/components/schemas/Physician'
+        invoices:
+          type: array
+          description: Array of invoices
+          items:
+            $ref: '#/components/schemas/validateinvoices_invoices'
+    Config_conditions_force_cumulation_validity:
+      type: object
+      properties:
+        chapters:
+          type: array
+          description: Services of the given chapters are always allowed to include.
+          example:
+          - "00.01"
+          - "00.03"
+          items:
+            type: string
+      description: |
+        Forces all services of the given types to be valid, even if these are defined to not to be included by cumulation exclusion. Quantity rules are still validated. Default: not set.
+    Config_conditions:
+      type: object
+      properties:
+        inaccurate_quantity_rules:
+          type: string
+          description: |
+            Validate inaccurate quantity rules (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) which can't be validated by the given data:
+              * `warning` - return validation result as warning
+              * `error` - return validation result as error
+              * `null` - (default) option is not set, quantity rules are ignored.
+          nullable: true
+          enum:
+          - warning
+          - error
+          - null
+        ignore_cumulations:
+          type: boolean
+          description: |
+            Ignores all cumulation erros/warnings and returns possible errors/warnings in the `ignored` object. Useful to focus validation of TARMED invoices to quantity, patient and reference rules:
+              * `true` - cumulation errors/warnings are returned in the `ignored` object
+              * `false` - (default) cumulation errors/warnings are not ignored for validation
+        force_cumulation_validity:
+          $ref: '#/components/schemas/Config_conditions_force_cumulation_validity'
+      description: Set special conditions as option for validation.
+    Physician_qualifications:
+      properties:
+        code:
+          type: string
+          format: string
+          example: "0100"
+    Report_ignored:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorCode'
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorCode'
+      description: ignored errors and warnings when configuration option `ignore_errors`
+        is set
+  responses:
+    UnauthorizedError:
+      description: API key is missing or invalid
+      headers:
+        WWW_Authenticate:
+          style: simple
+          explode: false
+          schema:
+            type: string
   parameters:
     locale:
       name: locale
       in: query
-      description: >
+      description: |
         Language
          * `de` - german (defaut, if not set)
          * `fr` - french
          * `it` - italian
+      required: false
+      style: form
+      explode: true
       schema:
         type: string
         example: de
     tarmedVersion:
       name: tarmed_version
       in: query
-      description: >
+      description: |
         TARMED tarif version
          * `01.09` -  (default, if not set)
          * `01.08.01_BR`
          * List of all versions: [https://www.tarmed-browser.ch/de/versionen](https://www.tarmed-browser.ch/de/versionen)
+      required: false
+      style: form
+      explode: true
       schema:
         type: string
-        example: 01.09
+        example: "1.09"
     invoiceId:
       name: invoiceId
       in: path
       description: ID of the invoice
       required: true
+      style: simple
+      explode: false
       schema:
         type: string
-  responses:
-    UnauthorizedError:
-      description: API key is missing or invalid
-      headers:
-        WWW_Authenticate:
-          schema:
-            type: string
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: X-API-Key
+      in: header
