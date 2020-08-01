@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: "1.0.0"
+  version: "1.3.0"
   title: TARMED Validator API
   description: |
     API for requesting & validating TARMED Data.
@@ -227,17 +227,65 @@ components:
             - 6000
             description: error and warning codes to ignore (will be placed in ignored array response)
         conditions:
-          type: array
-          items:
-            type: string
-            enum:
-            - inaccurate_quantity_warnings
-            - inaccurate_quantity_errors
-            description: >
-              Set special conditions for validation options. Available conditions are:
-              
-              * `inaccurate_quantity_warnings` - Validate inaccurate quantity rules (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) which can't be validated by the given data as warnings.
-              * `inaccurate_quantity_errors` - Validate inaccurate quantity rules (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) which can't be validated by the given data as errors. inaccurate_quantity_errors overwrites inaccurate_quantity_warnings if both conditions are given.
+          type: object
+          description: Set special conditions as option for validation.
+          properties:
+            inaccurate_quantity_rules:
+              type: string
+              nullable: true
+              enum:
+                - warning
+                - error
+                - null
+              description: >
+                Validate inaccurate quantity rules (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) which can't be validated by the given data:
+                  * `warning` - return validation result as warning
+                  * `error` - return validation result as error
+                  * `null` - (default) option is not set, quantity rules are ignored.
+            ignore_cumulations:
+              type: boolean
+              description: >
+                Ignores all cumulation erros/warnings and returns possible errors/warnings in the `ignored` object. Useful to focus validation of TARMED invoices to quantity, patient and reference rules:
+                  * `true` - cumulation errors/warnings are returned in the `ignored` object
+                  * `false` - (default) cumulation errors/warnings are not ignored for validation
+            force_cumulation_validity:
+              description: >
+                Forces all services of the given types to be valid, even if these are defined to not to be included by cumulation exclusion. Quantity rules are still validated. Default: not set.
+              type: object
+              properties:
+                chapters:
+                  type: array
+                  description: Services of the given chapters are always allowed to include.
+                  items:
+                    type: string
+                  example:
+                   - "00.01"
+                   - "00.03"
+                #groups:
+                #  type: array
+                #  description: Services of the given group are always allowed to include on an invoice.
+                #  items:
+                #    type: string
+                #  example:
+                #   - "25"
+                #   - "30"
+                #blocks:
+                #  type: array
+                #  description: Services of the given block are always allowed to include on an invoice.
+                #  items:
+                #    type: string
+                #  example:
+                #   - "03"
+                #   - "16"
+                #services:
+                #  type: array
+                #  description: Given services are always allowed to include on an invoice.
+                #  items:
+                #    type: string
+                #  example:
+                #   - "00.0010"
+                #   - "00.0015"
+                #   - "00.0020"
     Patient:
       type: object
       properties:
