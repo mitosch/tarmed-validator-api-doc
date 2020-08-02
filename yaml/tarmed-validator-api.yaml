@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.0.3
 info:
   version: "1.3.0"
   title: TARMED Validator API
@@ -136,12 +136,260 @@ paths:
                 $ref: "#/components/schemas/Report"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
+
+  /browser/chapters:
+    get:
+      summary: List TARMED chapters
+      description: List TARMED chapters. Maximum of 100 chapters are returned. Pagination (limit, offset) and includes (chapter interpretations, services) can be used.
+      tags:
+        - browser
+      parameters:
+      - name: page[limit]
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 10
+        required: false
+        description: limit number of returned records (1-100)
+      - name: page[offset]
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          example: 10
+        required: false
+        description: offset of returned records      
+      - name: include
+        in: query
+        required: false
+        description: "include associations of chapters: chapter interpretations, services"
+        style: form
+        explode: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - chapter_interpretations
+            - services
+      - $ref: "#/components/parameters/tarmedVersion"
+      - $ref: "#/components/parameters/locale"
+      responses:
+        "200":
+          description: Array of TARMED chapters
+
+  /browser/chapters/{code}:
+    get:
+      summary: Get TARMED chapter
+      description: Get TARMED chapter. Includes (chapter interpretations, services) can be used.
+      tags:
+        - browser
+      parameters:
+        - name: code
+          in: path
+          description: chapter code
+          required: true
+          schema:
+            type: string
+        - name: include
+          in: query
+          required: false
+          description: "include associations of chapters: chapter interpretations, services"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+              - chapter_interpretations
+              - services
+        - $ref: "#/components/parameters/tarmedVersion"
+        - $ref: "#/components/parameters/locale"
+      responses:
+        "200":
+          description: TARMED chapter
+
+  /browser/services:
+    get:
+      summary: List TARMED services
+      description: List TARMED services. Maximum of 100 services is returned. Pagination (limit, offset) and includes (service text, service groups, service blocks, chapter, service type, section, law, anesthesia risk) can be used.
+      tags:
+        - browser
+      parameters:
+        - name: page[limit]
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            example: 10
+          required: false
+          description: limit number of returned records (1-100)
+        - name: page[offset]
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            example: 10
+          required: false
+          description: offset of returned records
+        - name: include
+          in: query
+          required: false
+          description: include associations like service texts, service groups/blocks, chapters, and more
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+              - service_text
+              - service_groups
+              - service_blocks
+              - chapter
+              - service_type
+              - section
+              - law
+              - anesthesia_risk
+        - $ref: "#/components/parameters/tarmedVersion"
+        - $ref: "#/components/parameters/locale"
+      responses:
+        "200":
+          description: Array of TARMED services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: "#/components/schemas/TarmedServiceValues"
+                    - properties:
+                        service_text:
+                          $ref: "#/components/schemas/TarmedServiceTexts"
+                        service_groups:
+                          type: array
+                          items:
+                            allOf:
+                              - $ref: "#/components/schemas/TarmedServiceGroup"
+                      example:
+                        service_text:
+                          $ref: "#/components/examples/serviceText/value"
+                        service_groups:
+                          - $ref: "#/components/examples/serviceGroup/value"
+
+  /browser/services/{code}:
+    get:
+      summary: Get TARMED service
+      description: Get TARMED service. Includes (service text, service groups, service blocks, chapter, service type, section, law, anesthesia risk) can be used.
+      tags:
+        - browser
+      parameters:
+        - name: code
+          in: path
+          description: TARMED service code
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{2}\.\d{4}$'
+        - $ref: "#/components/parameters/tarmedVersion"
+        - $ref: "#/components/parameters/locale"
+      responses:
+        "200":
+          description: TARMED service
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/TarmedServiceValues"
+                  - properties:
+                      service_text:
+                        $ref: "#/components/schemas/TarmedServiceTexts"
+                      service_groups:
+                        type: array
+                        items:
+                          allOf:
+                            - $ref: "#/components/schemas/TarmedServiceGroup"
+                    example:
+                      service_text:
+                        $ref: "#/components/examples/serviceText/value"
+                      service_groups:
+                        - $ref: "#/components/examples/serviceGroup/value"
+
+  /browser/service-blocks:
+    get:
+      summary: List TARMED service blocks
+      description: List all TARMED service blocks.
+      tags:
+        - browser
+      parameters:
+        - $ref: "#/components/parameters/tarmedVersion"
+        - $ref: "#/components/parameters/locale"
+      responses:
+        "200":
+          description: Array of TARMED service blocks.
+
+  /browser/service-blocks/{code}:
+    get:
+      summary: Get TARMED service block
+      description: Get TARMED service block.
+      tags:
+        - browser
+      parameters:
+        - name: code
+          in: path
+          description: service block code
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/tarmedVersion"
+        - $ref: "#/components/parameters/locale"
+      responses:
+        "200":
+          description: TARMED service block
+
+  /browser/service-groups:
+    get:
+      summary: List TARMED service groups
+      description: List all TARMED service groups.
+      tags:
+        - browser
+      parameters:
+        - $ref: "#/components/parameters/tarmedVersion"
+        - $ref: "#/components/parameters/locale"
+      responses:
+        "200":
+          description: Array of TARMED service groups
+
+  /browser/service-groups/{code}:
+    get:
+      summary: Get TARMED service group
+      description: Get TARMED service group.
+      tags:
+        - browser
+      parameters:
+        - name: code
+          in: path
+          description: service group code
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/tarmedVersion"
+        - $ref: "#/components/parameters/locale"
+      responses:
+        "200":
+          description: TARMED service group
+
   /services/values/{code}:
     get:
+      deprecated: true
       summary: Get values of a TARMED service
       tags:
         - browser
-      description: Get values of a TARMED service by nr.
+      description: "Get values of a TARMED service by nr. deprecated: will be removed with version v2"
       parameters:
         - name: code
           in: path
@@ -161,10 +409,11 @@ paths:
                 $ref: "#/components/schemas/TarmedServiceValues"
   /services/texts/{code}:
     get:
+      deprecated: true
       summary: Get texts of a TARMED service
       tags:
         - browser
-      description: Get texts like name, medical and technical interpretation of a TARMED service by code.
+      description: "Get texts like name, medical and technical interpretation of a TARMED service by code. deprecated: will be removed with version v2"
       parameters:
         - name: code
           in: path
@@ -185,10 +434,11 @@ paths:
                 $ref: "#/components/schemas/TarmedServiceTexts"
   /services/texts:
     get:
+      deprecated: true
       summary: Get texts of TARMED services by query
       tags:
         - browser
-      description: Find TARMED services by code or title. Returns an array of TARMED text objects with name, medical and technical interpretation. Max. 30 items returned.
+      description: "Find TARMED services by code or title. Returns an array of TARMED text objects with name, medical and technical interpretation. Max. 30 items returned. deprecated: will be removed with version v2"
       parameters:
         - name: q
           in: query
@@ -213,6 +463,7 @@ components:
       type: apiKey
       in: header
       name: X-API-Key
+
   schemas:
     Config:
       type: object
@@ -441,6 +692,7 @@ components:
           format: integer
           example: 12345
           description: ID of given position in request which the error or warning refers to.
+
     TarmedServiceValues:
       allOf:
       - type: object
@@ -535,6 +787,7 @@ components:
           surcharge_pdoc: 0.93
           surcharge_tech: 1
       - $ref: "#/components/schemas/TarmedDates"
+
     TarmedServiceTexts:
       allOf:
         - type: object
@@ -542,30 +795,57 @@ components:
             code:
               type: string
               description: TARMED nr (LEISTUNG_TEXT.LNR)
-            name:
+            title:
               type: string
-              description: Name of the service (LEISTUNG_TEXT.BEZ_255)
-            medical_info:
+              description: Title of the service (LEISTUNG_TEXT.BEZ_255)
+            medical_information:
               type: string
               description: Medical interpretation (LEISTUNG_TEXT.MED_INTERPRET)
-            technical_info:
+            technical_information:
               type: string
               description: Technical interpretation (LEISTUNG_TEXT.TECH_INTERPRET)
             locale:
               type: string
-              enum: [de, fr, it]
+              enum: [D, F, I]
               description: >
                 Locale:
-                 * `de` - German
-                 * `fr` - French
-                 * `it` - Italian
+                 * `D` - German
+                 * `F` - French
+                 * `I` - Italian
           example:
             code: "00.0010"
-            name: "Konsultation, erste 5 Min. (Grundkonsultation)"
-            medical_info: "Beinhaltet alle ärztlichen Leistungen, die der Facharzt in seiner..."
-            technical_info: "Technische Interpretation ..."
+            title: "Konsultation, erste 5 Min. (Grundkonsultation)"
+            medical_information: "Beinhaltet alle ärztlichen Leistungen, die der Facharzt in seiner..."
+            technical_information: "Technische Interpretation ..."
             locale: "de"
         - $ref: "#/components/schemas/TarmedDates"
+
+    TarmedServiceGroup:
+      allOf:
+        - type: object
+          properties:
+            code:
+              type: string
+              description: Code of service group (CT_LEISTUNG_GRUPPEN.CODE)
+            title:
+              type: string
+              description: Title of service group (CT_LEISTUNG_GRUPPEN.GRUPPE)
+            locale:
+              type: string
+              enum: [D, F, I]
+              description: >
+                Locale:
+                 * `D` - German
+                 * `F` - French
+                 * `I` - Italian
+            show:
+              type: boolean
+              description: Show in browser (CT_LEISTUNG_GRUPPEN.ZEIGEN)
+            text:
+              type: string
+              description: Interpretation (CT_LEISTUNG_GRUPPEN.INTERPRETATION)
+        - $ref: "#/components/schemas/TarmedDates"
+
     TarmedDates:
       type: object
       properties:
@@ -616,6 +896,7 @@ components:
       required: true
       schema:
         type: string
+
   responses:
     UnauthorizedError:
       description: API key is missing or invalid
@@ -623,3 +904,47 @@ components:
         WWW_Authenticate:
           schema:
             type: string
+
+  examples:
+    service:
+      value:
+        code: 00.0010
+        assi_count: 0
+        change_min: 0
+        dignity_quant: "FMH05"
+        indication_min: 0
+        prepost_min: 0
+        rate_factor_assi: 0
+        rate_factor_doc: 10.42
+        rate_factor_pdoc: 9.69
+        rate_factor_tech: 8.19
+        room_min: 5
+        service_min: 5
+        sex: null
+        side: false
+        surcharge_doc: 1
+        surcharge_pdoc: 0.93
+        surcharge_tech: 1
+      summary: Values of TARMED Service 00.0010
+    serviceText:
+      value:
+        code: "00.0010"
+        title: "Konsultation, erste 5 Min. (Grundkonsultation)"
+        medical_information: "Beinhaltet alle ärztlichen Leistungen, die der Facharzt in seiner..."
+        technical_information: "Technische Interpretation ..."
+        locale: "de"
+        valid_from: "2018-01-01"
+        valid_until: "2999-12-31"
+        change_date: "2017-09-01"
+      summary: Text of TARMED Service Text 00.0010
+    serviceGroup:
+      value:
+        code: "03"
+        locale: "D"
+        show: true
+        text: ""
+        title: "Tarifpositionen bei denen der Zuschlag für hausärztliche Leistungen in der Arztpraxis (00.0015) abgerechnet werden kann."
+        valid_from: "2018-01-01"
+        valid_until: "2999-12-31"
+        change_date: "2017-09-01"
+      summary: TARMED Service Group 03
