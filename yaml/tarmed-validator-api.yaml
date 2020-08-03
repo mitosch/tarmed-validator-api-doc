@@ -144,41 +144,82 @@ paths:
       tags:
         - browser
       parameters:
-      - name: page[limit]
-        in: query
-        schema:
-          type: integer
-          minimum: 1
-          maximum: 100
-          example: 10
-        required: false
-        description: limit number of returned records (1-100)
-      - name: page[offset]
-        in: query
-        schema:
-          type: integer
-          minimum: 0
-          example: 10
-        required: false
-        description: offset of returned records      
-      - name: include
-        in: query
-        required: false
-        description: "include associations of chapters: chapter interpretations, services"
-        style: form
-        explode: false
-        schema:
-          type: array
-          items:
+        - name: filter[level]
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 10
+            example: 1
+          required: false
+          description: >
+            Show only chapters of specific hierarchical level. `00` is level 0, `00.01` level 1, etc.
+        - name: filter[parent]
+          in: query
+          schema:
             type: string
-            enum:
-            - chapter_interpretations
-            - services
-      - $ref: "#/components/parameters/tarmedVersion"
-      - $ref: "#/components/parameters/locale"
+            example: "00.01"
+          required: false
+          description: Filter chapters by a specific parent chapter
+        - name: page[limit]
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            example: 10
+          required: false
+          description: limit number of returned records (1-100)
+        - name: page[offset]
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            example: 10
+          required: false
+          description: offset of returned records      
+        - name: include
+          in: query
+          required: false
+          description: "include associations of chapters: chapter interpretations, services"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+              - chapter_interpretations
+              - services
+        - $ref: "#/components/parameters/tarmedVersion"
+        - $ref: "#/components/parameters/locale"
       responses:
         "200":
           description: Array of TARMED chapters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: "#/components/schemas/TarmedChapter"
+                    - properties:
+                        chapter_interpretations:
+                          type: array
+                          items:
+                            allOf:
+                              - $ref: "#/components/schemas/TarmedChapterInterpretation"
+                        services:
+                          type: array
+                          items:
+                            allOf:
+                              - $ref: "#/components/schemas/TarmedServiceValue"
+              examples:
+                chapters:
+                  $ref: "#/components/examples/chapters"
+                chaptersFilterLevelAndParent:
+                  $ref: "#/components/examples/chaptersFilterLevelAndParent"
+
 
   /browser/chapters/{code}:
     get:
@@ -211,6 +252,11 @@ paths:
       responses:
         "200":
           description: TARMED chapter
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/TarmedChapter"
 
   /browser/services:
     get:
@@ -266,20 +312,20 @@ paths:
                 type: array
                 items:
                   allOf:
-                    - $ref: "#/components/schemas/TarmedServiceValues"
+                    - $ref: "#/components/schemas/TarmedServiceValue"
                     - properties:
                         service_text:
-                          $ref: "#/components/schemas/TarmedServiceTexts"
+                          $ref: "#/components/schemas/TarmedServiceText"
                         service_groups:
                           type: array
                           items:
                             allOf:
                               - $ref: "#/components/schemas/TarmedServiceGroup"
-                      example:
-                        service_text:
-                          $ref: "#/components/examples/serviceText/value"
-                        service_groups:
-                          - $ref: "#/components/examples/serviceGroup/value"
+              examples:
+                services:
+                  $ref: "#/components/examples/services"
+                serviceWithServiceText:
+                  $ref: "#/components/examples/servicesWithServiceTextAndServiceGroups"
 
   /browser/services/{code}:
     get:
@@ -304,21 +350,22 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/TarmedServiceValues"
+                  - $ref: "#/components/schemas/TarmedServiceValue"
                   - properties:
                       service_text:
-                        $ref: "#/components/schemas/TarmedServiceTexts"
+                        $ref: "#/components/schemas/TarmedServiceText"
                       service_groups:
                         type: array
                         items:
                           allOf:
                             - $ref: "#/components/schemas/TarmedServiceGroup"
-                    example:
-                      service_text:
-                        $ref: "#/components/examples/serviceText/value"
-                      service_groups:
-                        - $ref: "#/components/examples/serviceGroup/value"
-
+              examples:
+                service:
+                  $ref: "#/components/examples/service"
+                serviceWithServiceText:
+                  $ref: "#/components/examples/serviceWithServiceText"  
+                serviceWithServiceTextAndServiceGroups:
+                  $ref: "#/components/examples/serviceWithServiceTextAndServiceGroups"
   /browser/service-blocks:
     get:
       summary: List TARMED service blocks
@@ -406,7 +453,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TarmedServiceValues"
+                $ref: "#/components/schemas/TarmedServiceValue"
   /services/texts/{code}:
     get:
       deprecated: true
@@ -431,7 +478,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TarmedServiceTexts"
+                $ref: "#/components/schemas/TarmedServiceText"
   /services/texts:
     get:
       deprecated: true
@@ -456,7 +503,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/TarmedServiceTexts"        
+                  $ref: "#/components/schemas/TarmedServiceText"        
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -693,7 +740,7 @@ components:
           example: 12345
           description: ID of given position in request which the error or warning refers to.
 
-    TarmedServiceValues:
+    TarmedServiceValue:
       allOf:
       - type: object
         properties:
@@ -769,26 +816,10 @@ components:
             format: float
             description: Zuschlags- oder Reduktions-Faktor auf techn. Leistung (LEISTUNG.F_TL)
         example:
-          code: 00.0010
-          assi_count: 0
-          change_min: 0
-          dignity_quant: "FMH05"
-          indication_min: 0
-          prepost_min: 0
-          rate_factor_assi: 0
-          rate_factor_doc: 10.42
-          rate_factor_pdoc: 9.69
-          rate_factor_tech: 8.19
-          room_min: 5
-          service_min: 5
-          sex: null
-          side: false
-          surcharge_doc: 1
-          surcharge_pdoc: 0.93
-          surcharge_tech: 1
+          $ref: "#/components/examples/service/value"
       - $ref: "#/components/schemas/TarmedDates"
 
-    TarmedServiceTexts:
+    TarmedServiceText:
       allOf:
         - type: object
           properties:
@@ -805,19 +836,13 @@ components:
               type: string
               description: Technical interpretation (LEISTUNG_TEXT.TECH_INTERPRET)
             locale:
-              type: string
-              enum: [D, F, I]
-              description: >
-                Locale:
-                 * `D` - German
-                 * `F` - French
-                 * `I` - Italian
+              $ref: "#/components/schemas/TarmedLocaleEnum"
           example:
             code: "00.0010"
             title: "Konsultation, erste 5 Min. (Grundkonsultation)"
             medical_information: "Beinhaltet alle ärztlichen Leistungen, die der Facharzt in seiner..."
             technical_information: "Technische Interpretation ..."
-            locale: "de"
+            locale: "D"
         - $ref: "#/components/schemas/TarmedDates"
 
     TarmedServiceGroup:
@@ -831,13 +856,7 @@ components:
               type: string
               description: Title of service group (CT_LEISTUNG_GRUPPEN.GRUPPE)
             locale:
-              type: string
-              enum: [D, F, I]
-              description: >
-                Locale:
-                 * `D` - German
-                 * `F` - French
-                 * `I` - Italian
+              $ref: "#/components/schemas/TarmedLocaleEnum"
             show:
               type: boolean
               description: Show in browser (CT_LEISTUNG_GRUPPEN.ZEIGEN)
@@ -845,6 +864,44 @@ components:
               type: string
               description: Interpretation (CT_LEISTUNG_GRUPPEN.INTERPRETATION)
         - $ref: "#/components/schemas/TarmedDates"
+
+    TarmedChapter:
+      allOf:
+        - type: object
+          properties:
+            code:
+              type: string
+              description: Code of chapter (KAPITEL_TEXT.KNR)
+            title:
+              type: string
+              description: Title of chapter (KAPITEL.BEZ_255)
+            locale:
+              $ref: "#/components/schemas/TarmedLocaleEnum"
+          example:
+            $ref: "#/components/examples/chapter/value"
+        - $ref: "#/components/schemas/TarmedDates"
+
+    TarmedChapterInterpretation:
+      allOf:
+        - type: object
+          properties:
+            chapter_code:
+              type: string
+              description: Foreign key to chapter code (KAPITEL_INTERPRETATION_TEXT.KNR)
+            nr:
+              type: integer
+              description: Number of the chapter interpretation (KAPITEL_INTERPRETATION_TEXT.KAP_INTERPRET_NR)
+            title:
+              type: string
+              description: Title of the chapter interpretation (KAPITEL_INTERPRETATION_TEXT.KAP_INTERPRET_TITEL)
+            interpretation:
+              type: string
+              description: Text of the chapter interpretation (KAPITEL_INTERPRETATION_TEXT.KAP_INTERPRET_TEXT)
+            locale:
+              $ref: "#/components/schemas/TarmedLocaleEnum"
+          example:
+            $ref: "#/components/examples/chapterInterpretation/value"
+        - $ref: "#/components/schemas/TarmedDates"        
 
     TarmedDates:
       type: object
@@ -865,6 +922,15 @@ components:
         valid_from: "2018-01-01"
         valid_until: "2999-12-31"
         change_date: "2017-03-12"
+
+    TarmedLocaleEnum:
+      type: string
+      enum: [D, F, I]
+      description: >
+        Locale:
+         * `D` - German
+         * `F` - French
+         * `I` - Italian      
 
   parameters:
     locale:
@@ -906,6 +972,79 @@ components:
             type: string
 
   examples:
+    chapter:
+      value:
+        code: "02.01"
+        title: "Psychiatrische Diagnostik und Therapie"
+        locale: "D"
+      summary: TARMED chapter 02.01
+
+    chapters:
+      summary: 5 Chapters
+      value:
+        - code: '00'
+          locale: D
+          title: Grundleistungen
+          valid_from: '2001-01-01'
+          valid_until: '2999-12-31'
+          change_date: '2001-11-08'
+        - code: '00.01'
+          locale: D
+          title: Allgemeine Grundleistungen
+          valid_from: '2001-01-01'
+          valid_until: '2999-12-31'
+          change_date: '2001-11-08'
+        - code: '00.01.01'
+          locale: D
+          title: Konsultation, Besuch, Wegentschädigung u.a.
+          valid_from: '2001-01-01'
+          valid_until: '2999-12-31'
+          change_date: '2001-11-08'
+        - code: '00.02'
+          locale: D
+          title: Leistungspakete
+          valid_from: '2001-01-01'
+          valid_until: '2999-12-31'
+          change_date: '2001-11-08'
+        - code: '00.02.01'
+          locale: D
+          title: Untersuchungen
+          valid_from: '2001-01-01'
+          valid_until: '2999-12-31'
+          change_date: '2001-11-08'
+
+    chaptersFilterLevelAndParent:
+      summary: "Chapters filtered: level 3, parent 05.01.02"
+      value:
+        - code: 05.01.02.01
+          locale: D
+          title: Elektroneurogramm ({ENG}), Elektromyogramm ({EMG})
+          valid_from: '2006-04-01'
+          valid_until: '2999-12-31'
+          change_date: '2006-01-13'
+        - code: 05.01.02.02
+          locale: D
+          title: Elektroenzephalogramm ({EEG})
+          valid_from: '2006-04-01'
+          valid_until: '2999-12-31'
+          change_date: '2006-01-13'
+        - code: 05.01.02.03
+          locale: D
+          title: Evozierte Potentiale, Monitoring
+          valid_from: '2001-01-01'
+          valid_until: '2999-12-31'
+          change_date: '2001-11-08'
+
+
+    chapterInterpretation:
+      value:
+        chapter_code: "02"
+        nr: 1
+        title: "Luminotherapie"
+        interpretation: "Lichtbehandlung zuhause:\n\n- Arztleistungen (Instruktion, Beratung) mit Leistungen (02.0010) und (02.0020), allenfalls mit 'Allgemeine Grundleistungen' (durch Nichtpsychiater) verrechenbar\n\n- Materialkosten gemäss {20}."
+        locale: "D"
+      summary: First Chapter Interprtation of Chapter 02
+      
     service:
       value:
         code: 00.0010
@@ -925,18 +1064,291 @@ components:
         surcharge_doc: 1
         surcharge_pdoc: 0.93
         surcharge_tech: 1
-      summary: Values of TARMED Service 00.0010
+      summary: Service 00.0010
     serviceText:
       value:
         code: "00.0010"
         title: "Konsultation, erste 5 Min. (Grundkonsultation)"
         medical_information: "Beinhaltet alle ärztlichen Leistungen, die der Facharzt in seiner..."
         technical_information: "Technische Interpretation ..."
-        locale: "de"
+        locale: "D"
         valid_from: "2018-01-01"
         valid_until: "2999-12-31"
         change_date: "2017-09-01"
-      summary: Text of TARMED Service Text 00.0010
+      summary: Service Text 00.0010
+
+    serviceWithServiceText:
+      value:
+        code: 00.0010
+        assi_count: 0
+        change_min: 0
+        dignity_quant: "FMH05"
+        indication_min: 0
+        prepost_min: 0
+        rate_factor_assi: 0
+        rate_factor_doc: 10.42
+        rate_factor_pdoc: 9.69
+        rate_factor_tech: 8.19
+        room_min: 5
+        service_min: 5
+        sex: null
+        side: false
+        surcharge_doc: 1
+        surcharge_pdoc: 0.93
+        surcharge_tech: 1
+        service_text:
+          code: "00.0010"
+          title: "Konsultation, erste 5 Min. (Grundkonsultation)"
+          medical_information: "Beinhaltet alle ärztlichen Leistungen, die der Facharzt in seiner..."
+          technical_information: "Technische Interpretation ..."
+          locale: "D"
+          valid_from: "2018-01-01"
+          valid_until: "2999-12-31"
+          change_date: "2017-09-01"
+      summary: Service 00.0010 including service_text
+
+    serviceWithServiceTextAndServiceGroups:
+      summary: Service 00.0010 including service_text,service_groups
+      value:
+        code: '00.0010'
+        additional_min: 0
+        anesthesia_risk_code: 
+        assistance_quantity: 0
+        change_min: 0
+        chapter_code: 00.01.01
+        experience_code: FMH05
+        indication_min: 0
+        law_code: '01'
+        prepost_min: 0
+        rate_factor_assistance: 0
+        rate_factor_doctor: 10.42
+        rate_factor_technical: 8.19
+        room_min: 5
+        section_code: '0001'
+        service_type_code: H
+        sex: 
+        side: false
+        surcharge_factor_doctor: 1
+        surcharge_factor_doctor_pract: 0.93
+        surcharge_factor_technical: 1
+        treatment_min: 5
+        visit_content: N
+        valid_from: '2018-01-01'
+        valid_until: '2999-12-31'
+        change_date: '2017-03-12'
+        service_text:
+          code: '00.0010'
+          title: Konsultation, erste 5 Min. (Grundkonsultation)
+          locale: D
+          medical_interpretation: |-
+            Beinhaltet alle ärztlichen Leistungen, die der Facharzt in seiner Praxis oder der Arzt bei ambulanten Patienten im Spital ohne oder mit einfachen Hilfsmitteln (etwa Inhalt 'Besuchskoffer') am Patienten hinsichtlich der Beschwerden und Erscheinungen erbringt, derentwegen dieser zum Facharzt kommt, bzw. gebracht wird und hinsichtlich der Beschwerden und Erscheinungen, die während der gleichen Behandlungsdauer auftreten.
+        
+            Beinhaltet Begrüssung, Verabschiedung, nicht besonders tarifierte Besprechungen und Untersuchungen, nicht besonders tarifierte Verrichtungen (z.B.: bestimmte Injektionen, Verbände usw.), Begleitung zu und Übergabe (inkl. Anordnungen) an Hilfspersonal betreffend Administration, technische und kurative Leistungen, Medikamentenabgabe (in Notfallsituation u/o als Starterabgabe), auf Konsultation bezogene unmittelbar vorgängige/anschliessende Akteneinsicht/Akteneinträge.
+          technical_interpretation: 
+          valid_from: '2001-01-01'
+          valid_until: '2999-12-31'
+          change_date: '2001-11-08'
+        service_groups:
+        - code: '03'
+          title: Tarifpositionen bei denen der Zuschlag für hausärztliche Leistungen in der
+            Arztpraxis (00.0015) abgerechnet werden kann.
+          locale: D
+          show: true
+          text: ''
+          valid_from: '2018-01-01'
+          valid_until: '2999-12-31'
+          change_date: '2017-09-01'
+        - code: '18'
+          title: Allgemeine Grundleistungen
+          locale: D
+          show: true
+          text: ''
+          valid_from: '2001-01-01'
+          valid_until: '2999-12-31'
+          change_date: '2001-11-08'
+        - code: '58'
+          title: Allgemeine Grundleistungen nicht kumulierbar mit Konsilium
+          locale: D
+          show: true
+          text: ''
+          valid_from: '2001-01-01'
+          valid_until: '2999-12-31'
+          change_date: '2001-11-08'
+
+    services:
+      summary: 2 Services
+      value:
+        - code: '00.0010'
+          additional_min: 0
+          anesthesia_risk_code: 
+          assistance_quantity: 0
+          change_min: 0
+          chapter_code: 00.01.01
+          experience_code: FMH05
+          indication_min: 0
+          law_code: '01'
+          prepost_min: 0
+          rate_factor_assistance: 0
+          rate_factor_doctor: 10.42
+          rate_factor_technical: 8.19
+          room_min: 5
+          section_code: '0001'
+          service_type_code: H
+          sex: 
+          side: false
+          surcharge_factor_doctor: 1
+          surcharge_factor_doctor_pract: 0.93
+          surcharge_factor_technical: 1
+          treatment_min: 5
+          visit_content: N
+          valid_from: '2018-01-01'
+          valid_until: '2999-12-31'
+          change_date: '2017-03-12'
+        - code: '00.0015'
+          additional_min: 
+          anesthesia_risk_code: 
+          assistance_quantity: 0
+          change_min: 0
+          chapter_code: 00.01.01
+          experience_code: FMH05
+          indication_min: 0
+          law_code: '01'
+          prepost_min: 0
+          rate_factor_assistance: 0
+          rate_factor_doctor: 10.88
+          rate_factor_technical: 0
+          room_min: 0
+          section_code: '0001'
+          service_type_code: Z
+          sex: 
+          side: false
+          surcharge_factor_doctor: 1
+          surcharge_factor_doctor_pract: 0.93
+          surcharge_factor_technical: 1
+          treatment_min: 0
+          visit_content: N
+          valid_from: '2018-01-01'
+          valid_until: '2999-12-31'
+          change_date: '2017-03-12'
+
+
+    servicesWithServiceTextAndServiceGroups:
+      summary: 2 Services includes service_text,service_groups
+      value:
+        - code: '00.0010'
+          additional_min: 0
+          anesthesia_risk_code: 
+          assistance_quantity: 0
+          change_min: 0
+          chapter_code: 00.01.01
+          experience_code: FMH05
+          indication_min: 0
+          law_code: '01'
+          prepost_min: 0
+          rate_factor_assistance: 0
+          rate_factor_doctor: 10.42
+          rate_factor_technical: 8.19
+          room_min: 5
+          section_code: '0001'
+          service_type_code: H
+          sex: 
+          side: false
+          surcharge_factor_doctor: 1
+          surcharge_factor_doctor_pract: 0.93
+          surcharge_factor_technical: 1
+          treatment_min: 5
+          visit_content: N
+          valid_from: '2018-01-01'
+          valid_until: '2999-12-31'
+          change_date: '2017-03-12'
+          service_text:
+            code: '00.0010'
+            title: Konsultation, erste 5 Min. (Grundkonsultation)
+            locale: D
+            medical_interpretation: |-
+              Beinhaltet alle ärztlichen Leistungen, die der Facharzt in seiner Praxis oder der Arzt bei ambulanten Patienten im Spital ohne oder mit einfachen Hilfsmitteln (etwa Inhalt 'Besuchskoffer') am Patienten hinsichtlich der Beschwerden und Erscheinungen erbringt, derentwegen dieser zum Facharzt kommt, bzw. gebracht wird und hinsichtlich der Beschwerden und Erscheinungen, die während der gleichen Behandlungsdauer auftreten.
+        
+              Beinhaltet Begrüssung, Verabschiedung, nicht besonders tarifierte Besprechungen und Untersuchungen, nicht besonders tarifierte Verrichtungen (z.B.: bestimmte Injektionen, Verbände usw.), Begleitung zu und Übergabe (inkl. Anordnungen) an Hilfspersonal betreffend Administration, technische und kurative Leistungen, Medikamentenabgabe (in Notfallsituation u/o als Starterabgabe), auf Konsultation bezogene unmittelbar vorgängige/anschliessende Akteneinsicht/Akteneinträge.
+            technical_interpretation: 
+            valid_from: '2001-01-01'
+            valid_until: '2999-12-31'
+            change_date: '2001-11-08'
+          service_groups:
+          - code: '03'
+            title: Tarifpositionen bei denen der Zuschlag für hausärztliche Leistungen in
+              der Arztpraxis (00.0015) abgerechnet werden kann.
+            locale: D
+            show: true
+            text: ''
+            valid_from: '2018-01-01'
+            valid_until: '2999-12-31'
+            change_date: '2017-09-01'
+          - code: '18'
+            title: Allgemeine Grundleistungen
+            locale: D
+            show: true
+            text: ''
+            valid_from: '2001-01-01'
+            valid_until: '2999-12-31'
+            change_date: '2001-11-08'
+          - code: '58'
+            title: Allgemeine Grundleistungen nicht kumulierbar mit Konsilium
+            locale: D
+            show: true
+            text: ''
+            valid_from: '2001-01-01'
+            valid_until: '2999-12-31'
+            change_date: '2001-11-08'
+        - code: '00.0015'
+          additional_min: 
+          anesthesia_risk_code: 
+          assistance_quantity: 0
+          change_min: 0
+          chapter_code: 00.01.01
+          experience_code: FMH05
+          indication_min: 0
+          law_code: '01'
+          prepost_min: 0
+          rate_factor_assistance: 0
+          rate_factor_doctor: 10.88
+          rate_factor_technical: 0
+          room_min: 0
+          section_code: '0001'
+          service_type_code: Z
+          sex: 
+          side: false
+          surcharge_factor_doctor: 1
+          surcharge_factor_doctor_pract: 0.93
+          surcharge_factor_technical: 1
+          treatment_min: 0
+          visit_content: N
+          valid_from: '2018-01-01'
+          valid_until: '2999-12-31'
+          change_date: '2017-03-12'
+          service_text:
+            code: '00.0015'
+            title: "+ Zuschlag für hausärztliche Leistungen in der Arztpraxis"
+            locale: D
+            medical_interpretation: |-
+              Darf nur im Zusammenhang mit der Erbringung von hausärztlichen Leistungen abgerechnet werden und wenn dem Patienten am selben Tag keine spezialärztlichen Leistungen durch den gleichen Leistungserbringer verrechnet werden.
+        
+              Darf nicht von ambulanten Diensten von Spitälern abgerechnet werden.
+            technical_interpretation: 
+            valid_from: '2014-10-01'
+            valid_until: '2999-12-31'
+            change_date: '2014-07-01'
+          service_groups:
+          - code: '03'
+            title: Tarifpositionen bei denen der Zuschlag für hausärztliche Leistungen in
+              der Arztpraxis (00.0015) abgerechnet werden kann.
+            locale: D
+            show: true
+            text: ''
+            valid_from: '2018-01-01'
+            valid_until: '2999-12-31'
+            change_date: '2017-09-01'
+
+
     serviceGroup:
       value:
         code: "03"
