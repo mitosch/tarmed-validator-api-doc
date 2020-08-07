@@ -21,6 +21,7 @@ The TARMED Validator API allows you to validate and access TARMED data. The main
 1. [Examples](#examples)
     1. [Example Validation](#example-validation)
     1. [List Services with Includes](#list-2-services-including-service-text-and-service-groups)
+    1. [List Services filterd by Service Groups](#list-2-services-including-service-text-and-service-groups)
 
 ## Documentation
 
@@ -467,7 +468,13 @@ Get TARMED service group.
 
 The following example shows, how to validate TARMED positions of a single invoice:
 
-Example request body `GET /validate`:
+**Request**
+
+**`PUT /validate`**
+
+<details>
+<summary>Show request body</summary>
+
 ```json
 {
   "locale": "de",
@@ -543,7 +550,11 @@ Example request body `GET /validate`:
 }
 ```
 
-Example response body:
+</details>
+
+<details>
+<summary>Show response</summary>
+
 ```json
 {
   "validation": "invalid",
@@ -642,6 +653,8 @@ Example response body:
 }
 ```
 
+</details>
+
 ### List 2 Services including Service Text and Service Groups
 
 List the first 2 services and include the service text and the service groups of the services.
@@ -650,7 +663,9 @@ List the first 2 services and include the service text and the service groups of
 
 **`GET /browser/services?page[limit]=2&include=service_text,service_groups`**
 
-**Response**
+<details>
+<summary>Show response</summary>
+
 ```json
 [
   {
@@ -775,3 +790,383 @@ List the first 2 services and include the service text and the service groups of
   }
 ]
 ```
+
+</details>
+
+### List 5 Services Filtered by Specific Service Group
+
+List the first 5 Services which belong to the Service Group 30 and include the Service Groups and Sections.
+
+**Request**
+
+**`GET /browser/services?page[limit]=5&filter[service_groups.code]=30&include=service_text,service_groups`**
+
+<details>
+<summary>Show response</summary>
+
+```json
+[
+    {
+        "code": "00.0056",
+        "additional_min": 0,
+        "anesthesia_risk_code": null,
+        "assistance_quantity": 0,
+        "change_min": 0,
+        "chapter_code": "00.01.01",
+        "experience_code": "FMH05",
+        "indication_min": 0,
+        "law_code": "01",
+        "prepost_min": 0,
+        "rate_factor_assistance": 0.0,
+        "rate_factor_doctor": 10.42,
+        "rate_factor_technical": 8.19,
+        "room_min": 5,
+        "section_code": "0001",
+        "service_type_code": "H",
+        "sex": null,
+        "side": false,
+        "surcharge_factor_doctor": 1.0,
+        "surcharge_factor_doctor_pract": 0.93,
+        "surcharge_factor_technical": 1.0,
+        "treatment_min": 5,
+        "visit_content": "N",
+        "valid_from": "2018-01-01",
+        "valid_until": "2999-12-31",
+        "change_date": "2017-09-01",
+        "service_groups": [
+            {
+                "code": "03",
+                "title": "Tarifpositionen bei denen der Zuschlag für hausärztliche Leistungen in der Arztpraxis (00.0015) abgerechnet werden kann.",
+                "locale": "D",
+                "show": true,
+                "text": "",
+                "valid_from": "2018-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2017-09-01"
+            },
+            {
+                "code": "18",
+                "title": "Allgemeine Grundleistungen",
+                "locale": "D",
+                "show": true,
+                "text": "",
+                "valid_from": "2001-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2001-11-08"
+            },
+            {
+                "code": "30",
+                "title": "Tarifpositionen für Patienten mit erhöhtem Behandlungsbedarf",
+                "locale": "D",
+                "show": true,
+                "text": "Abrechenbar im Ausnahmefall bei Patienten über 6 Jahren und unter 75 Jahren mit einem erhöhten Behandlungsbedarf im Sinne eines erhöhten Zeitbedarfs",
+                "valid_from": "2018-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2017-09-01"
+            },
+            {
+                "code": "58",
+                "title": "Allgemeine Grundleistungen nicht kumulierbar mit Konsilium",
+                "locale": "D",
+                "show": true,
+                "text": "",
+                "valid_from": "2001-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2001-11-08"
+            }
+        ],
+        "section": {
+            "code": "0001",
+            "locale": "D",
+            "title": "Sprechzimmer",
+            "valid_from": "2001-01-01",
+            "valid_until": "2999-12-31",
+            "change_date": "2001-11-08"
+        }
+    },
+    {
+        "code": "00.0076",
+        "additional_min": 0,
+        "anesthesia_risk_code": null,
+        "assistance_quantity": 0,
+        "change_min": 0,
+        "chapter_code": "00.01.01",
+        "experience_code": "FMH05",
+        "indication_min": 0,
+        "law_code": "01",
+        "prepost_min": 0,
+        "rate_factor_assistance": 0.0,
+        "rate_factor_doctor": 10.42,
+        "rate_factor_technical": 8.19,
+        "room_min": 5,
+        "section_code": "0001",
+        "service_type_code": "Z",
+        "sex": null,
+        "side": false,
+        "surcharge_factor_doctor": 1.0,
+        "surcharge_factor_doctor_pract": 0.93,
+        "surcharge_factor_technical": 1.0,
+        "treatment_min": 5,
+        "visit_content": "N",
+        "valid_from": "2018-01-01",
+        "valid_until": "2999-12-31",
+        "change_date": "2017-09-01",
+        "service_groups": [
+            {
+                "code": "30",
+                "title": "Tarifpositionen für Patienten mit erhöhtem Behandlungsbedarf",
+                "locale": "D",
+                "show": true,
+                "text": "Abrechenbar im Ausnahmefall bei Patienten über 6 Jahren und unter 75 Jahren mit einem erhöhten Behandlungsbedarf im Sinne eines erhöhten Zeitbedarfs",
+                "valid_from": "2018-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2017-09-01"
+            }
+        ],
+        "section": {
+            "code": "0001",
+            "locale": "D",
+            "title": "Sprechzimmer",
+            "valid_from": "2001-01-01",
+            "valid_until": "2999-12-31",
+            "change_date": "2001-11-08"
+        }
+    },
+    {
+        "code": "00.0126",
+        "additional_min": 0,
+        "anesthesia_risk_code": null,
+        "assistance_quantity": 0,
+        "change_min": 0,
+        "chapter_code": "00.01.01",
+        "experience_code": "FMH05",
+        "indication_min": 0,
+        "law_code": "01",
+        "prepost_min": 0,
+        "rate_factor_assistance": 0.0,
+        "rate_factor_doctor": 10.42,
+        "rate_factor_technical": 8.19,
+        "room_min": 5,
+        "section_code": "0001",
+        "service_type_code": "Z",
+        "sex": null,
+        "side": false,
+        "surcharge_factor_doctor": 1.0,
+        "surcharge_factor_doctor_pract": 0.93,
+        "surcharge_factor_technical": 1.0,
+        "treatment_min": 5,
+        "visit_content": "N",
+        "valid_from": "2018-01-01",
+        "valid_until": "2999-12-31",
+        "change_date": "2017-09-01",
+        "service_groups": [
+            {
+                "code": "20",
+                "title": "Telefonische Konsultationen",
+                "locale": "D",
+                "show": true,
+                "text": "",
+                "valid_from": "2001-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2001-11-08"
+            },
+            {
+                "code": "30",
+                "title": "Tarifpositionen für Patienten mit erhöhtem Behandlungsbedarf",
+                "locale": "D",
+                "show": true,
+                "text": "Abrechenbar im Ausnahmefall bei Patienten über 6 Jahren und unter 75 Jahren mit einem erhöhten Behandlungsbedarf im Sinne eines erhöhten Zeitbedarfs",
+                "valid_from": "2018-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2017-09-01"
+            }
+        ],
+        "section": {
+            "code": "0001",
+            "locale": "D",
+            "title": "Sprechzimmer",
+            "valid_from": "2001-01-01",
+            "valid_until": "2999-12-31",
+            "change_date": "2001-11-08"
+        }
+    },
+    {
+        "code": "00.0161",
+        "additional_min": 0,
+        "anesthesia_risk_code": null,
+        "assistance_quantity": 0,
+        "change_min": 0,
+        "chapter_code": "00.01.01",
+        "experience_code": "FMH05",
+        "indication_min": 0,
+        "law_code": "01",
+        "prepost_min": 0,
+        "rate_factor_assistance": 0.0,
+        "rate_factor_doctor": 2.08,
+        "rate_factor_technical": 1.64,
+        "room_min": 1,
+        "section_code": "0001",
+        "service_type_code": "H",
+        "sex": null,
+        "side": false,
+        "surcharge_factor_doctor": 1.0,
+        "surcharge_factor_doctor_pract": 0.93,
+        "surcharge_factor_technical": 1.0,
+        "treatment_min": 1,
+        "visit_content": "N",
+        "valid_from": "2018-01-01",
+        "valid_until": "2999-12-31",
+        "change_date": "2017-03-01",
+        "service_groups": [
+            {
+                "code": "03",
+                "title": "Tarifpositionen bei denen der Zuschlag für hausärztliche Leistungen in der Arztpraxis (00.0015) abgerechnet werden kann.",
+                "locale": "D",
+                "show": true,
+                "text": "",
+                "valid_from": "2018-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2017-09-01"
+            },
+            {
+                "code": "11",
+                "title": "Ärztliche Leistungen in Abwesenheit des Patienten bei Personen über 6 Jahren und unter 75 Jahren mit einem erhöhten Behandlungsbedarf",
+                "locale": "D",
+                "show": true,
+                "text": "Enthält alle ärztlichen Leistungen in Abwesenheit des Patienten bei Patienten über 6 Jahren und unter 75 Jahren mit erhöhtem Behandlungsbedarf \n\nFür die Position (00.0167) gilt die Limitation 5 Mal pro Einsendung.",
+                "valid_from": "2018-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2017-09-01"
+            },
+            {
+                "code": "18",
+                "title": "Allgemeine Grundleistungen",
+                "locale": "D",
+                "show": true,
+                "text": "",
+                "valid_from": "2001-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2001-11-08"
+            },
+            {
+                "code": "30",
+                "title": "Tarifpositionen für Patienten mit erhöhtem Behandlungsbedarf",
+                "locale": "D",
+                "show": true,
+                "text": "Abrechenbar im Ausnahmefall bei Patienten über 6 Jahren und unter 75 Jahren mit einem erhöhten Behandlungsbedarf im Sinne eines erhöhten Zeitbedarfs",
+                "valid_from": "2018-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2017-09-01"
+            },
+            {
+                "code": "58",
+                "title": "Allgemeine Grundleistungen nicht kumulierbar mit Konsilium",
+                "locale": "D",
+                "show": true,
+                "text": "",
+                "valid_from": "2001-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2001-11-08"
+            }
+        ],
+        "section": {
+            "code": "0001",
+            "locale": "D",
+            "title": "Sprechzimmer",
+            "valid_from": "2001-01-01",
+            "valid_until": "2999-12-31",
+            "change_date": "2001-11-08"
+        }
+    },
+    {
+        "code": "00.0162",
+        "additional_min": 0,
+        "anesthesia_risk_code": null,
+        "assistance_quantity": 0,
+        "change_min": 0,
+        "chapter_code": "00.01.01",
+        "experience_code": "FMH05",
+        "indication_min": 0,
+        "law_code": "01",
+        "prepost_min": 0,
+        "rate_factor_assistance": 0.0,
+        "rate_factor_doctor": 2.08,
+        "rate_factor_technical": 1.64,
+        "room_min": 1,
+        "section_code": "0001",
+        "service_type_code": "H",
+        "sex": null,
+        "side": false,
+        "surcharge_factor_doctor": 1.0,
+        "surcharge_factor_doctor_pract": 0.93,
+        "surcharge_factor_technical": 1.0,
+        "treatment_min": 1,
+        "visit_content": "N",
+        "valid_from": "2018-01-01",
+        "valid_until": "2999-12-31",
+        "change_date": "2017-03-01",
+        "service_groups": [
+            {
+                "code": "03",
+                "title": "Tarifpositionen bei denen der Zuschlag für hausärztliche Leistungen in der Arztpraxis (00.0015) abgerechnet werden kann.",
+                "locale": "D",
+                "show": true,
+                "text": "",
+                "valid_from": "2018-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2017-09-01"
+            },
+            {
+                "code": "11",
+                "title": "Ärztliche Leistungen in Abwesenheit des Patienten bei Personen über 6 Jahren und unter 75 Jahren mit einem erhöhten Behandlungsbedarf",
+                "locale": "D",
+                "show": true,
+                "text": "Enthält alle ärztlichen Leistungen in Abwesenheit des Patienten bei Patienten über 6 Jahren und unter 75 Jahren mit erhöhtem Behandlungsbedarf \n\nFür die Position (00.0167) gilt die Limitation 5 Mal pro Einsendung.",
+                "valid_from": "2018-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2017-09-01"
+            },
+            {
+                "code": "18",
+                "title": "Allgemeine Grundleistungen",
+                "locale": "D",
+                "show": true,
+                "text": "",
+                "valid_from": "2001-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2001-11-08"
+            },
+            {
+                "code": "30",
+                "title": "Tarifpositionen für Patienten mit erhöhtem Behandlungsbedarf",
+                "locale": "D",
+                "show": true,
+                "text": "Abrechenbar im Ausnahmefall bei Patienten über 6 Jahren und unter 75 Jahren mit einem erhöhten Behandlungsbedarf im Sinne eines erhöhten Zeitbedarfs",
+                "valid_from": "2018-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2017-09-01"
+            },
+            {
+                "code": "58",
+                "title": "Allgemeine Grundleistungen nicht kumulierbar mit Konsilium",
+                "locale": "D",
+                "show": true,
+                "text": "",
+                "valid_from": "2001-01-01",
+                "valid_until": "2999-12-31",
+                "change_date": "2001-11-08"
+            }
+        ],
+        "section": {
+            "code": "0001",
+            "locale": "D",
+            "title": "Sprechzimmer",
+            "valid_from": "2001-01-01",
+            "valid_until": "2999-12-31",
+            "change_date": "2001-11-08"
+        }
+    }
+]
+```
+
+</details>
