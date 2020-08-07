@@ -20,7 +20,7 @@ The TARMED Validator API allows you to validate and access TARMED data. The main
     1. [Service Groups](#service-groups)
 1. [Examples](#examples)
     1. [Example Validation](#example-validation)
-    1. [List Services with Includes](#example-services-with-includes)
+    1. [List Services with Includes](#list-2-services-including-service-text-and-service-groups)
 
 ## Documentation
 
@@ -196,7 +196,7 @@ Description about the `error` object:
 * `internal_id`: Optional; if the error is in relation to a position and an `internal_id` was provided in the request, it is returned. This is useful to easily display the error in a UI.
 * `rules`: Optional; if the corresponding condition has TARMED rules, these are returned in an array of strings as human readable texts.
 
-### Validate Multiple Invoice
+### Validate Multiple Invoices
 
 **`PUT /validate-invoices`**
 
