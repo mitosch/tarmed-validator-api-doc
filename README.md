@@ -2,9 +2,29 @@
 
 The TARMED Validator API allows you to validate and access TARMED data. The main purpose of this API is to validate TARMED invoices.
 
+## Table of Contents
+
+1. [Documentation](#documentation)
+1. [Configuration](#configuration)
+    1. [Ignore Errors](#ignore-errors)
+    1. [Conditions](#conditions)
+1. [Global Parameters](#global-parameters)
+1. [TARMED Validation API](#tarmed-validation-api)
+    1. [Validate Single Invoice](#validate-single-invoice)
+    1. [Validate Multiple Invoices](#validate-multiple-invoices)
+    1. [Error & Warning Codes](#error--warning-codes)
+1. [TARMED Browser API](#tarmed-browser-api)
+    1. [Chapters](#chapters)
+    1. [Services](#services)
+    1. [Service Blocks](#service-blocks)
+    1. [Service Groups](#service-groups)
+1. [Examples](#examples)
+    1. [Example Validation](#example-validation)
+    1. [List Services with Includes](#example-services-with-includes)
+
 ## Documentation
 
-The full documentation is available on SwaggerHub: [TARMED Validator API](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed)
+A detailled documentation of all endpoints is available on SwaggerHub: [TARMED Validator API](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed)
 
 ## Configuration
 
@@ -54,19 +74,89 @@ Possible condition options are:
 | `ignore_cumulations` | Ignores all cumulation erros/warnings and returns possible errors/warnings in the `ignored` object. Useful to focus validation of TARMED invoices to quantity, patient and reference rules:<br>`true`: cumulation errors/warnings are returned in the `ignored` object<br>`false`: cumulation errors/warnings are not ignored for validation | `boolean` | `false` |
 | `force_cumulation_validity` | Forces all services of the given types to be valid, even if these are defined to not to be included by cumulation exclusion. Quantity rules are still validated. The given types are arrays with strings. Available options:<br>`chapters: ["00.01", "..."]`: Services of these chapters will always be valid. | `object` | `{}` |
 
-## Validation Requests
+## Global Parameters
 
-The following endpoints are available:
+The following request parameters can be used for any request:
 
-| Methods | Path | Description |
-| --- | --- | --- |
-| `PUT` | `/validate` | Validates a list of services (TARMED Tarifs) against each other. |
-| `PUT` | `/validate-invoices` | Validates multiple invoices with lists of services. <br> With this endpoint it is possible to validate all rules with the full patient history. |
+| Name | Located in | Description | Required | Type |
+| ---- | ---------- | ----------- | -------- | ---- |
+| locale | query | Returns the validation errors or the TARMED data in the given language:<br>`de`: german (defaut)<br>`fr`: french<br>`it` - italian<br> | No | `string` |
+| tarmed_version | query | Selects the TARMED tarif version:<br>`01.09`: (default)<br>`01.08.01_BR`<br>List of all versions: [https://www.tarmed-browser.ch/de/versionen](https://www.tarmed-browser.ch/de/versionen)  | No | `string` |
 
+## TARMED Validation API
 
-## Validation Response
+### Validate Single Invoice
 
-The response object of a validation is structured as follows:
+**`PUT /validate`**
+
+Validate multiple TARMED services in a single requests. Useful for validating single invoices.
+
+**Request Body**
+
+Example:
+
+```json
+{
+  "config": {
+    "ignore_errors": [
+      [
+        5007,
+        6000
+      ]
+    ],
+    "conditions": {
+      "inaccurate_quantity_rules": "warning",
+      "force_cumulation_validity": {
+        "chapters": [
+          "00.01",
+          "00.03"
+        ]
+      }
+    }
+  },
+  "patient": {
+    "dob": "1981-03-30",
+    "gender": "m"
+  },
+  "physician": {
+    "qualifications": [
+      {
+        "code": "0100"
+      }
+    ]
+  },
+  "services": [
+    {
+      "code": "00.0010",
+      "ref_code": null,
+      "quantity": 1,
+      "session": 1,
+      "date": "2020-08-07",
+      "internal_id": "1-123"
+    },
+    {
+      "code": "00.0015",
+      "ref_code": "00.0010",
+      "quantity": 1,
+      "session": 1,
+      "date": "2020-08-07",
+      "internal_id": "1-124"
+    },
+    {
+      "code": "00.0020",
+      "ref_code": "00.0010",
+      "quantity": 2,
+      "session": 1,
+      "date": "2020-08-07",
+      "internal_id": "1-125"
+    }
+  ]
+}
+```
+
+**Response**
+
+The structured response about the submitted invoice looks like:
 
 ```json
 {
@@ -106,6 +196,114 @@ Description about the `error` object:
 * `internal_id`: Optional; if the error is in relation to a position and an `internal_id` was provided in the request, it is returned. This is useful to easily display the error in a UI.
 * `rules`: Optional; if the corresponding condition has TARMED rules, these are returned in an array of strings as human readable texts.
 
+### Validate Multiple Invoice
+
+**`PUT /validate-invoices`**
+
+Validate multiple invoices with multiple TARMED services in a single requests. Useful for validating multiple invoices (as presented to a patient). With this endpoint it is possible to validate all rules with the full patient history.
+
+**Request Body**
+
+Example:
+
+```json
+{
+  "config": {
+    "ignore_errors": [
+      [
+        5007,
+        6000
+      ]
+    ],
+    "conditions": {
+      "inaccurate_quantity_rules": "warning",
+      "force_cumulation_validity": {
+        "chapters": [
+          "00.01",
+          "00.03"
+        ]
+      }
+    }
+  },
+  "patient": {
+    "dob": "1981-03-30",
+    "gender": "m"
+  },
+  "physician": {
+    "qualifications": [
+      {
+        "code": "0100"
+      }
+    ]
+  },
+  "invoices": [
+    {
+      "internal_id": 100,
+      "case_nr": "C-001",
+      "services": [
+        {
+          "code": "00.0010",
+          "ref_code": null,
+          "quantity": 1,
+          "session": 1,
+          "date": "2020-08-07",
+          "internal_id": "1-123"
+        },
+        {
+          "code": "00.0015",
+          "ref_code": "00.0010",
+          "quantity": 1,
+          "session": 1,
+          "date": "2020-08-07",
+          "internal_id": "1-124"
+        },
+        {
+          "code": "00.0020",
+          "ref_code": "00.0010",
+          "quantity": 2,
+          "session": 1,
+          "date": "2020-08-07",
+          "internal_id": "1-125"
+        }
+      ]
+    },
+    {
+      "internal_id": 201,
+      "case_nr": "C-002",
+      "services": [
+        {
+          "code": "00.0010",
+          "ref_code": null,
+          "quantity": 1,
+          "session": 1,
+          "date": "2020-09-01",
+          "internal_id": "2-123"
+        },
+        {
+          "code": "00.0015",
+          "ref_code": "00.0010",
+          "quantity": 1,
+          "session": 1,
+          "date": "2020-09-01",
+          "internal_id": "2-124"
+        },
+        {
+          "code": "00.0020",
+          "ref_code": "00.0010",
+          "quantity": 2,
+          "session": 1,
+          "date": "2020-09-01",
+          "internal_id": "2-125"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Response**
+
+The response is identical with the request for [validating single invoices](#validate-single-invoice).
 
 ### Error & Warning Codes
 
@@ -162,7 +360,110 @@ Special conditions:
 
 (1): inaccurrate validation, see config.conditions for details
 
-## Full Example Validation Example
+## TARMED Browser API
+
+### Chapters
+
+#### List TARMED chapters
+
+**`GET /browser/chapters`**
+
+List TARMED chapters. Maximum of 100 chapters are returned. Pagination (limit, offset) and includes (chapter interpretations, services) can be used.
+
+**Parameters**
+
+| Name | Located in | Description | Required | Type |
+| ---- | ---------- | ----------- | -------- | ---- |
+| filter[level] | query | Show only chapters of specific hierarchical level. `00` is level 0, `00.01` level 1, etc.  | No | string |
+| filter[parent] | query | Filter chapters by a specific parent chapter | No | string |
+| page[limit] | query | limit number of returned records (1-100) | No | integer |
+| page[offset] | query | offset of returned records | No | integer |
+| include | query | include associations of chapters: chapter interpretations, services | No | list of strings, comma separated |
+
+#### Get TARMED chapter
+
+**`GET /browser/chapters/{code}`**
+
+Get TARMED chapter. Includes (chapter interpretations, services) can be used.
+
+**Parameters**
+
+| Name | Located in | Description | Required | Type |
+| ---- | ---------- | ----------- | -------- | ---- |
+| code | path | chapter code | Yes | string  |
+| include | query | include associations of chapters: chapter interpretations, services | No | list of strings, comma separated |
+
+### Services
+
+#### List TARMED services
+
+**`GET /browser/services`**
+
+List TARMED services. Maximum of 100 services is returned. Pagination (limit, offset) and includes (service text, service groups, service blocks, chapter, service type, section, law, anesthesia risk) can be used.
+
+**Parameters**
+
+| Name | Located in | Description | Required | Type |
+| ---- | ---------- | ----------- | -------- | ---- |
+| page[limit] | query | limit number of returned records (1-100) | No | integer |
+| page[offset] | query | offset of returned records | No | integer |
+| include | query | include associations like service texts, service groups/blocks, chapters, and more | No | list of strings, comma separated |
+
+#### Get TARMED service
+
+**`GET /browser/services/{code}`**
+
+Get TARMED service. Includes (service text, service groups, service blocks, chapter, service type, section, law, anesthesia risk) can be used.
+
+**Parameters**
+
+| Name | Located in | Description | Required | Type |
+| ---- | ---------- | ----------- | -------- | ---- |
+| code | path | TARMED service code | Yes | string |
+
+### Service Blocks
+
+#### List TARMED service blocks
+
+**`GET /browser/service-blocks`**
+
+List all TARMED service blocks.
+
+#### Get TARMED service block
+
+**`GET /browser/service-blocks/{code}`**
+
+Get TARMED service block.
+
+**Parameters**
+
+| Name | Located in | Description | Required | Type |
+| ---- | ---------- | ----------- | -------- | ---- |
+| code | path | service block code | Yes | string |
+
+### Service Groups
+
+#### List TARMED service groups
+
+**`GET /browser/service-groups`**
+
+List all TARMED service groups.
+
+#### Get TARMED service group
+
+**`GET /browser/service-groups/{code}`**
+
+Get TARMED service group.
+
+**Parameters**
+
+| Name | Located in | Description | Required | Type |
+| ---- | ---------- | ----------- | -------- | ---- |
+| code | path | service group code | Yes | string |
+
+## Examples
+
+### Example Validation
 
 The following example shows, how to validate TARMED positions of a single invoice:
 
@@ -341,127 +642,136 @@ Example response body:
 }
 ```
 
-## Access TARMED Data
+### List 2 Services including Service Text and Service Groups
 
-The followig requests can be used to access TARMED data.
+List the first 2 services and include the service text and the service groups of the services.
 
-### `GET` /services/values/{code}
+**Request**
 
-Get values of a TARMED service by code.
+**`GET /browser/services?page[limit]=2&include=service_text,service_groups`**
 
-Example request:
-```
-GET /services/values/00.0010?tarmed_version=01.09
-```
-
-Response:
-```json
-{
-    "code": "00.0010",
-    "chapter_code": "00.01.01",
-    "service_type_code": "H",
-    "side": false,
-    "sex": null,
-    "anesthesia_risk_code": null,
-    "law_code": "01",
-    "experience_code": "FMH05",
-    "visit_content": "N",
-    "section_code": "0001",
-    "rate_factor_doctor": 10.42,
-    "rate_factor_assistance": 0.0,
-    "rate_factor_technical": 8.19,
-    "assistance_quantity": 0,
-    "treatment_min": 5,
-    "prepost_min": 0,
-    "indication_min": 0,
-    "additional_min": 0,
-    "room_min": 5,
-    "change_min": 0,
-    "surcharge_factor_doctor": 1.0,
-    "surcharge_factor_technical": 1.0,
-    "surcharge_factor_doctor_pract": 0.93,
-    "valid_from": "2018-01-01",
-    "valid_until": "2999-12-31",
-    "change_date": "2017-03-12"
-}
-```
-
-### `GET` /services/texts/{code}
-
-Get texts like name, medical and technical interpretation of a TARMED service by code.
-
-Example request:
-```
-GET /services/texts/00.0010?tarmed_version=01.09
-```
-
-Response:
-```json
-{
-    "code": "00.0010",
-    "locale": "D",
-    "title": "Konsultation, erste 5 Min. (Grundkonsultation)",
-    "medical_interpretation": "Beinhaltet alle ärztlichen Leistungen, die der Facharzt in seiner Praxis oder der Arzt bei ambulanten Patienten im Spital ohne oder mit einfachen Hilfsmitteln (etwa Inhalt 'Besuchskoffer') am Patienten hinsichtlich der Beschwerden und Erscheinungen erbringt, derentwegen dieser zum Facharzt kommt, bzw. gebracht wird und hinsichtlich der Beschwerden und Erscheinungen, die während der gleichen Behandlungsdauer auftreten.\n\nBeinhaltet Begrüssung, Verabschiedung, nicht besonders tarifierte Besprechungen und Untersuchungen, nicht besonders tarifierte Verrichtungen (z.B.: bestimmte Injektionen, Verbände usw.), Begleitung zu und Übergabe (inkl. Anordnungen) an Hilfspersonal betreffend Administration, technische und kurative Leistungen, Medikamentenabgabe (in Notfallsituation u/o als Starterabgabe), auf Konsultation bezogene unmittelbar vorgängige/anschliessende Akteneinsicht/Akteneinträge.",
-    "technical_interpretation": null,
-    "valid_from": "2001-01-01",
-    "valid_until": "2999-12-31",
-    "change_date": "2001-11-08"
-}
-```
-
-### `GET` /services/texts?q=query
-
-Find TARMED services by code or title. Returns an array of TARMED text objects with name, medical and technical interpretation. Max. 30 items returned.
-
-Example request:
-```
-GET /services/texts?q=infusion
-```
-
-Response:
+**Response**
 ```json
 [
-    {
-        "code": "00.0750",
-        "locale": "D",
-        "title": "Injektion/Infusion durch nichtärztliches Personal",
-        "medical_interpretation": "Nur verrechenbar, falls die Injektion oder die Infusion nicht im Rahmen einer ärztlichen Beratung erfolgt.\n\nInkl. Infusionswechsel.",
-        "technical_interpretation": null,
-        "valid_from": "2001-01-01",
-        "valid_until": "2999-12-31",
-        "change_date": "2001-11-08"
+  {
+    "code": "00.0010",
+    "additional_min": 0,
+    "anesthesia_risk_code": null,
+    "assistance_quantity": 0,
+    "change_min": 0,
+    "chapter_code": "00.01.01",
+    "experience_code": "FMH05",
+    "indication_min": 0,
+    "law_code": "01",
+    "prepost_min": 0,
+    "rate_factor_assistance": 0,
+    "rate_factor_doctor": 10.42,
+    "rate_factor_technical": 8.19,
+    "room_min": 5,
+    "section_code": "0001",
+    "service_type_code": "H",
+    "sex": null,
+    "side": false,
+    "surcharge_factor_doctor": 1,
+    "surcharge_factor_doctor_pract": 0.93,
+    "surcharge_factor_technical": 1,
+    "treatment_min": 5,
+    "visit_content": "N",
+    "valid_from": "2018-01-01",
+    "valid_until": "2999-12-31",
+    "change_date": "2017-03-12",
+    "service_text": {
+      "code": "00.0010",
+      "title": "Konsultation, erste 5 Min. (Grundkonsultation)",
+      "locale": "D",
+      "medical_interpretation": "Beinhaltet alle ärztlichen Leistungen, die der Facharzt in seiner Praxis oder der Arzt bei ambulanten Patienten im Spital ohne oder mit einfachen Hilfsmitteln (etwa Inhalt 'Besuchskoffer') am Patienten hinsichtlich der Beschwerden und Erscheinungen erbringt, derentwegen dieser zum Facharzt kommt, bzw. gebracht wird und hinsichtlich der Beschwerden und Erscheinungen, die während der gleichen Behandlungsdauer auftreten.\n\nBeinhaltet Begrüssung, Verabschiedung, nicht besonders tarifierte Besprechungen und Untersuchungen, nicht besonders tarifierte Verrichtungen (z.B.: bestimmte Injektionen, Verbände usw.), Begleitung zu und Übergabe (inkl. Anordnungen) an Hilfspersonal betreffend Administration, technische und kurative Leistungen, Medikamentenabgabe (in Notfallsituation u/o als Starterabgabe), auf Konsultation bezogene unmittelbar vorgängige/anschliessende Akteneinsicht/Akteneinträge.",
+      "technical_interpretation": null,
+      "valid_from": "2001-01-01",
+      "valid_until": "2999-12-31",
+      "change_date": "2001-11-08"
     },
-    {
-        "code": "00.0930",
+    "service_groups": [
+      {
+        "code": "03",
+        "title": "Tarifpositionen bei denen der Zuschlag für hausärztliche Leistungen in der Arztpraxis (00.0015) abgerechnet werden kann.",
         "locale": "D",
-        "title": "Wechsel einer Infusion, venös, durch den Facharzt (Bestandteil von 'Allgemeine Grundleistungen')",
-        "medical_interpretation": null,
-        "technical_interpretation": null,
+        "show": true,
+        "text": "",
+        "valid_from": "2018-01-01",
+        "valid_until": "2999-12-31",
+        "change_date": "2017-09-01"
+      },
+      {
+        "code": "18",
+        "title": "Allgemeine Grundleistungen",
+        "locale": "D",
+        "show": true,
+        "text": "",
         "valid_from": "2001-01-01",
         "valid_until": "2999-12-31",
         "change_date": "2001-11-08"
+      },
+      {
+        "code": "58",
+        "title": "Allgemeine Grundleistungen nicht kumulierbar mit Konsilium",
+        "locale": "D",
+        "show": true,
+        "text": "",
+        "valid_from": "2001-01-01",
+        "valid_until": "2999-12-31",
+        "change_date": "2001-11-08"
+      }
+    ]
+  },
+  {
+    "code": "00.0015",
+    "additional_min": null,
+    "anesthesia_risk_code": null,
+    "assistance_quantity": 0,
+    "change_min": 0,
+    "chapter_code": "00.01.01",
+    "experience_code": "FMH05",
+    "indication_min": 0,
+    "law_code": "01",
+    "prepost_min": 0,
+    "rate_factor_assistance": 0,
+    "rate_factor_doctor": 10.88,
+    "rate_factor_technical": 0,
+    "room_min": 0,
+    "section_code": "0001",
+    "service_type_code": "Z",
+    "sex": null,
+    "side": false,
+    "surcharge_factor_doctor": 1,
+    "surcharge_factor_doctor_pract": 0.93,
+    "surcharge_factor_technical": 1,
+    "treatment_min": 0,
+    "visit_content": "N",
+    "valid_from": "2018-01-01",
+    "valid_until": "2999-12-31",
+    "change_date": "2017-03-12",
+    "service_text": {
+      "code": "00.0015",
+      "title": "+ Zuschlag für hausärztliche Leistungen in der Arztpraxis",
+      "locale": "D",
+      "medical_interpretation": "Darf nur im Zusammenhang mit der Erbringung von hausärztlichen Leistungen abgerechnet werden und wenn dem Patienten am selben Tag keine spezialärztlichen Leistungen durch den gleichen Leistungserbringer verrechnet werden.\n\nDarf nicht von ambulanten Diensten von Spitälern abgerechnet werden.",
+      "technical_interpretation": null,
+      "valid_from": "2014-10-01",
+      "valid_until": "2999-12-31",
+      "change_date": "2014-07-01"
     },
-    {
-        "code": "00.0940",
+    "service_groups": [
+      {
+        "code": "03",
+        "title": "Tarifpositionen bei denen der Zuschlag für hausärztliche Leistungen in der Arztpraxis (00.0015) abgerechnet werden kann.",
         "locale": "D",
-        "title": "Wechsel einer Infusion, arteriell, durch den Facharzt (Bestandteil von 'Allgemeine Grundleistungen')",
-        "medical_interpretation": null,
-        "technical_interpretation": null,
-        "valid_from": "2001-01-01",
+        "show": true,
+        "text": "",
+        "valid_from": "2018-01-01",
         "valid_until": "2999-12-31",
-        "change_date": "2001-11-08"
-    }
+        "change_date": "2017-09-01"
+      }
+    ]
+  }
 ]
 ```
-
-## Roadmap
-
-The following features will be implemented in the future:
-
-- [ ] Special validation conditions by configuration for allowing all general services of LG-18 (Allgemeine Grundleistungen)
-- [ ] Special validation condition for allowing all cumulations over service blocks (unlike the general rule defines it)
-- [ ] Additional TARMED data requests for: requesting all rules for a single service, requesting service groups/blocks of services, requesting services of a group/block, etc.
-- [ ] Validation reporting in french, italian
-- [x] Special validation conditions by configuration for inaccurate quantity rules
-- [x] Validate other service types, if possible (Pro Memoria, Zusatzleistung)
-- [x] Notes for quantity rules which can't be validated technically (e.g. Pro Gutachten)
