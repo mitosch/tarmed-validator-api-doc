@@ -21,7 +21,7 @@ The TARMED Validator API allows you to validate and access TARMED data. The main
 1. [Examples](#examples)
     1. [Example Validation](#example-validation)
     1. [List Services with Includes](#list-2-services-including-service-text-and-service-groups)
-    1. [List Services filterd by Service Groups](#list-2-services-including-service-text-and-service-groups)
+    1. [List Services filterd by Service Groups](#list-5-services-filtered-by-specific-service-group)
 
 ## Documentation
 
