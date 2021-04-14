@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  version: "1.3.0"
+  version: "1.3.2"
   title: TARMED Validator API
   description: |
     API for requesting & validating TARMED Data.
@@ -20,7 +20,7 @@ info:
       * [Tarifsystem TARMED, Bundesamt für Gesundheit](https://www.bag.admin.ch/bag/de/home/versicherungen/krankenversicherung/krankenversicherung-leistungen-tarife/Aerztliche-Leistungen-in-der-Krankenversicherung/Tarifsystem-Tarmed.html)
     
 servers:
-  - url: http://{environment}.tarmed-validator.ch/api/{version}
+  - url: https://{environment}.tarmed-validator.ch/api/{version}
     variables:
       environment:
         default: api
@@ -45,7 +45,7 @@ tags:
 paths:
   /validate:
     put:
-      summary: Validate TARMED services
+      summary: Validate Single TARMED Invoice
       description: |
         Validate multiple TARMED services in a single requests. Useful for validating single invoices.
       tags:
@@ -82,9 +82,9 @@ paths:
           $ref: "#/components/responses/UnauthorizedError"
   /validate-invoices:
     put:
-      summary: Validate TARMED services structured by bills
+      summary: Validate Multiple TARMED Invoices
       description: |
-        Validate multiple invoices with multiple TARMED services in a single requests. Useful for validating multiple invoices (as presented to a patient).
+        Validate multiple invoices with multiple TARMED services in a single requests. Useful for validating multiple invoices (as presented to a patient). With this endpoint it is possible to validate all rules with the full patient history.
       tags:
         - validator
       parameters:
@@ -301,6 +301,48 @@ paths:
               - section
               - law
               - anesthesia_risk
+        - name: filter
+          in: query
+          required: false
+          description: >
+            Filter services by specific fields or associations.
+            The following fields of services are supported:
+            
+              * chapter\_code
+              * experience\_code
+              * law\_code
+              * section\_code
+              * service\_type\_code
+            
+            The following association fields are supported:
+            
+              * service_groups.code
+              * service_blocks.code
+          style: deepObject
+          schema:
+            type: object
+            properties:
+              chapter_code:
+                type: string
+                example: "02.01"
+              experience_code:
+                type: string
+                example: "FMH05"
+              law_code:
+                type: string
+                example: "01"
+              section_code:
+                type: string
+                example: "0001"
+              service_type_code:
+                type: string
+                example: "Z"
+              service_groups.code:
+                type: string
+                example: "30"
+              service_blocks.code:
+                type: string
+                example: "51"
         - $ref: "#/components/parameters/tarmedVersion"
         - $ref: "#/components/parameters/locale"
       responses:
@@ -928,6 +970,7 @@ components:
       enum: [D, F, I]
       description: >
         Locale:
+        
          * `D` - German
          * `F` - French
          * `I` - Italian      
@@ -937,10 +980,11 @@ components:
       name: locale
       in: query
       description: >
-        Language
-         * `de` - german (defaut, if not set)
-         * `fr` - french
-         * `it` - italian
+        Returns the validation errors or the TARMED data in the given language:
+        
+         * `de`: german (defaut)
+         * `fr`: french
+         * `it`: italian
       schema:
         type: string
         example: de
@@ -948,8 +992,9 @@ components:
       name: tarmed_version
       in: query
       description: >
-        TARMED tarif version
-         * `01.09` -  (default, if not set)
+        Selects the TARMED tarif version:
+        
+         * `01.09` (default)
          * `01.08.01_BR`
          * List of all versions: [https://www.tarmed-browser.ch/de/versionen](https://www.tarmed-browser.ch/de/versionen)
       schema:
@@ -1047,7 +1092,7 @@ components:
       
     service:
       value:
-        code: 00.0010
+        code: "00.0010"
         assi_count: 0
         change_min: 0
         dignity_quant: "FMH05"
@@ -1079,7 +1124,7 @@ components:
 
     serviceWithServiceText:
       value:
-        code: 00.0010
+        code: "00.0010"
         assi_count: 0
         change_min: 0
         dignity_quant: "FMH05"

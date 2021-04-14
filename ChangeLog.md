@@ -2,9 +2,13 @@
 
 ## Changelog
 
+[1.3.2](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/1.3.2)
+- [x] Add french and italian validation messages
+
 [1.3.1](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/1.3.1)
 - [x] Add cumulation validation by service groups
 - [x] Add filter possibility to services by fields (chapter_code, experience_code, law_code, section_code, service_type_code) and associations (service_groups.code, service_blocks.code)
+- [x] Bugfix: Return correct locale for /services/ endpoints
 
 [1.3.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/1.3.0)
 - [x] New browser endpoints:
