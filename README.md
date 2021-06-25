@@ -1,6 +1,13 @@
 # TARMED Validator API
 
-The TARMED Validator API allows you to validate and access TARMED data. The main purpose of this API is to validate TARMED invoices.
+The TARMED Validator API allows you to validate and access TARMED and other tariff data like migel, lab or drug. The main purpose of this API is to validate TARMED invoices.
+
+Available tariffs:
+
+* TARMED (001) [<sup>1</sup>][1]
+* `migel` (452, Mittel und Gegenständeliste)[<sup>2</sup>][2]
+* `lab` (317, Analysenliste)[<sup>3</sup>][3]
+* `drug` (402, Spezialitätenliste)[<sup>4</sup>][4]
 
 ## Table of Contents
 
@@ -1170,3 +1177,8 @@ List the first 5 Services which belong to the Service Group 30 and include the S
 ```
 
 </details>
+
+[1]: https://www.bag.admin.ch/bag/de/home/versicherungen/krankenversicherung/krankenversicherung-leistungen-tarife/Aerztliche-Leistungen-in-der-Krankenversicherung/Tarifsystem-Tarmed.html
+[2]: https://www.bag.admin.ch/bag/de/home/versicherungen/krankenversicherung/krankenversicherung-leistungen-tarife/Mittel-und-Gegenstaendeliste.html
+[3]: https://www.bag.admin.ch/bag/de/home/versicherungen/krankenversicherung/krankenversicherung-leistungen-tarife/Analysenliste.html
+[4]: http://www.spezialitätenliste.ch

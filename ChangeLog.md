@@ -1,6 +1,28 @@
 # TARMED Validator API
 
+Current version:
+
+* Production: [1.3.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/1.3.0)
+* Staging: [2.1.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.1.0)
+
 ## Changelog
+
+[2.2.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.2.0)
+- [x] Validating other tariffs (drug, migel, lab) with `/validate` and `/validate-invoices` endpoint
+
+[2.1.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.1.0)
+- [x] Add drug (Spezialitätenliste) tariff to endpointis `/common/`
+- [x] New endpoint `/common/search-items` for fulltext search capabilities in all tariffs
+- [x] Implement pagination for `/common/items`
+
+[2.0.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.0.0)
+- [x] Add new endpoints /common/ for listing and searching other tariffs (lab = Analysenliste, migel = Mittel und Genständeliste):
+  - `/common/items`: List tariff items
+  - `/common/tariffs`: List tariff items
+- [x] Rename all /browser/ endpoints to /tarmed/
+
+[1.4.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/1.4.0)
+- [x] Add filter operators to `/browser/services/` endpoint to filter by equality, starting with, ending with or contains
 
 [1.3.2](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/1.3.2)
 - [x] Add french and italian validation messages
