@@ -7,6 +7,10 @@ Current version:
 
 ## Changelog
 
+[2.3.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.3.0)
+- [x] Add extra key-value pairs in response for `/common/items` for tariff-specific values
+- [x] New endponts `/common/categories` to request categories of tariffs (452 migel included)
+
 [2.2.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.2.0)
 - [x] Validating other tariffs (drug, migel, lab) with `/validate` and `/validate-invoices` endpoint
 
