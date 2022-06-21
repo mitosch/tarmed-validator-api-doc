@@ -3,9 +3,15 @@
 Current version:
 
 * Production: [1.3.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/1.3.0)
-* Staging: [2.3.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.3.0)
+* Staging: [2.3.2](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.3.2)
 
 ## Changelog
+
+[2.3.2](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.3.2)
+- [x] Implement ancestry search (parent, children) of LEISTUNG_HIERARCHIE.
+
+[2.3.1](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.3.1)
+- [x] Bugfix: Fix documentation error where `include` was documented as `extra` intead of `extras`
 
 [2.3.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.3.0)
 - [x] Add extra key-value pairs in response for `/common/items` for tariff-specific values
