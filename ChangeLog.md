@@ -7,6 +7,9 @@ Current version:
 
 ## Changelog
 
+[2.3.3](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.3.3)
+- [x] Add new tariff: Zur Rose Non-SL price list
+
 [2.3.2](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.3.2)
 - [x] Implement ancestry search (parent, children) of LEISTUNG_HIERARCHIE.
 
