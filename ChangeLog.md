@@ -3,9 +3,12 @@
 Current version:
 
 * Production: [2.3.2](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.3.2)
-* Staging: [2.3.2](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.3.2)
+* Staging: [2.4.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.4.0)
 
 ## Changelog
+
+[2.4.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.4.0)
+- [x] New tarmed browser endpoint: `/tarmed/qualifications`
 
 [2.3.3](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.3.3)
 - [x] Add new tariff: Zur Rose Non-SL price list
