@@ -2,7 +2,7 @@
 
 Current version:
 
-* Production: [2.3.2](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.3.2)
+* Production: [2.4.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.4.0)
 * Staging: [2.4.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.4.0)
 
 ## Changelog
