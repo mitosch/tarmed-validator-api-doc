@@ -8,7 +8,7 @@ Current version:
 ## Changelog
 
 [2.4.1](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.4.1)
-- [x] New include for tarmed browser endpoints: `/tarmed/services` and `/tarmed/services/:code`
+- [x] New include for tarmed browser endpoints `/tarmed/services` and `/tarmed/services/:code`: parent_services, children_services
 - [x] New hint for validation when time based periods are not closed: `8001`
 
 [2.4.0](https://app.swaggerhub.com/apis-docs/Mitosch/tarmed/2.4.0)
