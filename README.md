@@ -82,6 +82,7 @@ Possible condition options are:
 | `inaccurate_quantity_rules` | Validate inaccurate quantity rules (pro Aufenthalt, pro Testreihe, pro Schwangerschaft, pro Geburt, pro Eingriff, etc.) which can't be validated by the given data:<br>`"warning"`: return validation result as warning<br>`"error"`: return validation result as error<br>`null`: option is not set, quantity rules are ignored. | `string` | `null` |
 | `ignore_cumulations` | Ignores all cumulation erros/warnings and returns possible errors/warnings in the `ignored` object. Useful to focus validation of TARMED invoices to quantity, patient and reference rules:<br>`true`: cumulation errors/warnings are returned in the `ignored` object<br>`false`: cumulation errors/warnings are not ignored for validation | `boolean` | `false` |
 | `force_cumulation_validity` | Forces all services of the given types to be valid, even if these are defined to not to be included by cumulation exclusion. Quantity rules are still validated. The given types are arrays with strings. Available options:<br>`chapters: ["00.01", "..."]`: Services of these chapters will always be valid. | `object` | `{}` |
+| `hints` | Array of options to respond with hints for common sense rules, which are not directly implemented in the TARMED standard. Available options:<br>`time_period_services`: When services like 00.0020 are included, a hint is shown when 00.0030 is not mentioned (last 5 mins.). | `array` | `[]` |
 
 ## Global Parameters
 
@@ -364,10 +365,12 @@ The following list shows what the TARMED Validator API is capabable of and which
 | `6100` | Qualification warning: qualification not set. | |
 | `6101` | Qualification warning: qualification not set. Service has special cumulation exceptions. | |
 | `7000` | Warning: Duplicate entry in session found | |
+| `8001` | Hint: time based period services not closed | (2) |
 
 Special conditions:
 
 (1): inaccurrate validation, see config.conditions for details
+(2): hints, have to be activated by config.conditions
 
 ## TARMED Browser API
 
