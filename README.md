@@ -370,6 +370,7 @@ The following list shows what the TARMED Validator API is capabable of and which
 Special conditions:
 
 (1): inaccurrate validation, see config.conditions for details
+
 (2): hints, have to be activated by config.conditions
 
 ## TARMED Browser API
